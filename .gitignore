@@ -1,0 +1,8 @@
+# pdf files
+*.pdf
+
+# python cache
+__pycache__
+
+# virtual environmnet
+venv
