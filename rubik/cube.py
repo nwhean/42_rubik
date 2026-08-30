@@ -1,5 +1,5 @@
 """Represent the state of a Rubik's Cube."""
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from enum import Enum
 
 class Colour(Enum):
@@ -10,6 +10,18 @@ class Colour(Enum):
     Y = 3   # Down
     R = 4   # Front
     O = 5   # Back
+
+
+# the allowable transitions between faces when turning a face of the cube
+TRANSITION_TABLE = {
+    None: ("R", "L", "U", "D", "F", "B"),
+    "R": ("L", "U", "D", "F", "B"),
+    "L": ("U", "D", "F", "B"),
+    "U": ("D", "R", "L", "F", "B"),
+    "D": ("R", "L", "F", "B"),
+    "F": ("B", "R", "L", "U", "D"),
+    "B": ("R", "L", "U", "D")
+}
 
 
 def pack_8_colours(colours: list[Colour]) -> int:
@@ -52,6 +64,7 @@ class Cube:
     D: int
     F: int
     B: int
+    _last_move: str | None = field(default=None, init=False)
 
     def __str__(self) -> str:
         c = {}
@@ -210,3 +223,15 @@ class Cube:
                 self._turn_double(face)
             case _:
                 raise ValueError(f"Invalid command: {command}")
+
+        self._last_move = face
+
+    def neighbours(self) -> list["Cube"]:
+        """Return a list of all neighbouring cubes."""
+        neighbours = []
+        for face in TRANSITION_TABLE[self._last_move]:
+            for modifier in ["", "'", "2"]:
+                new_cube = replace(self)
+                new_cube.turn(face + modifier)
+                neighbours.append(new_cube)
+        return neighbours
