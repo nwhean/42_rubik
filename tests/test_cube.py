@@ -1,4 +1,5 @@
 """Unittest for Node class."""
+from dataclasses import replace
 import unittest
 
 from rubik.cube import (
@@ -8,6 +9,15 @@ from rubik.cube import (
     rotate_right,
     Colour,
     Cube,
+)
+
+SOLVED = Cube(
+    pack_8_colours([Colour.B] * 8),
+    pack_8_colours([Colour.G] * 8),
+    pack_8_colours([Colour.W] * 8),
+    pack_8_colours([Colour.Y] * 8),
+    pack_8_colours([Colour.R] * 8),
+    pack_8_colours([Colour.O] * 8),
 )
 
 
@@ -103,22 +113,8 @@ class TestCube(unittest.TestCase):
 
     def test_cube_hash(self):
         """Test that the hash of the cube is consistent."""
-        cube_0 = Cube(
-            pack_8_colours([Colour.B] * 8),
-            pack_8_colours([Colour.G] * 8),
-            pack_8_colours([Colour.W] * 8),
-            pack_8_colours([Colour.Y] * 8),
-            pack_8_colours([Colour.R] * 8),
-            pack_8_colours([Colour.O] * 8),
-        )
-        cube_1 = Cube(
-            pack_8_colours([Colour.B] * 8),
-            pack_8_colours([Colour.G] * 8),
-            pack_8_colours([Colour.W] * 8),
-            pack_8_colours([Colour.Y] * 8),
-            pack_8_colours([Colour.R] * 8),
-            pack_8_colours([Colour.O] * 8),
-        )
+        cube_0 = replace(SOLVED)
+        cube_1 = replace(SOLVED)
         self.assertEqual(hash(cube_0), hash(cube_1))
 
         # Turn a face of the cube and check that the hash changes
@@ -127,14 +123,7 @@ class TestCube(unittest.TestCase):
 
     def test_turn_clockwise_R(self):
         """Test turning a face of the cube clockwise."""
-        cube = Cube(
-            pack_8_colours([Colour.B] * 8),
-            pack_8_colours([Colour.G] * 8),
-            pack_8_colours([Colour.W] * 8),
-            pack_8_colours([Colour.Y] * 8),
-            pack_8_colours([Colour.R] * 8),
-            pack_8_colours([Colour.O] * 8),
-        )
+        cube = replace(SOLVED)
         cube._turn_clockwise('R')
         expected_str = (
             "Y         Y         O \n"
@@ -153,14 +142,7 @@ class TestCube(unittest.TestCase):
 
     def test_turn_clockwise_U(self):
         """Test turning a face of the cube clockwise."""
-        cube = Cube(
-            pack_8_colours([Colour.B] * 8),
-            pack_8_colours([Colour.G] * 8),
-            pack_8_colours([Colour.W] * 8),
-            pack_8_colours([Colour.Y] * 8),
-            pack_8_colours([Colour.R] * 8),
-            pack_8_colours([Colour.O] * 8),
-        )
+        cube = replace(SOLVED)
         cube._turn_clockwise('U')
         expected_str = (
             "Y         Y         Y \n"
@@ -179,14 +161,7 @@ class TestCube(unittest.TestCase):
 
     def test_turn_clockwise_F(self):
         """Test turning a face of the cube clockwise."""
-        cube = Cube(
-            pack_8_colours([Colour.B] * 8),
-            pack_8_colours([Colour.G] * 8),
-            pack_8_colours([Colour.W] * 8),
-            pack_8_colours([Colour.Y] * 8),
-            pack_8_colours([Colour.R] * 8),
-            pack_8_colours([Colour.O] * 8),
-        )
+        cube = replace(SOLVED)
         cube._turn_clockwise('F')
         expected_str = (
             "Y         Y         Y \n"
@@ -205,14 +180,7 @@ class TestCube(unittest.TestCase):
 
     def test_turn_clockwise_L(self):
         """Test turning a face of the cube clockwise."""
-        cube = Cube(
-            pack_8_colours([Colour.B] * 8),
-            pack_8_colours([Colour.G] * 8),
-            pack_8_colours([Colour.W] * 8),
-            pack_8_colours([Colour.Y] * 8),
-            pack_8_colours([Colour.R] * 8),
-            pack_8_colours([Colour.O] * 8),
-        )
+        cube = replace(SOLVED)
         cube._turn_clockwise('L')
         expected_str = (
             "R         Y         Y \n"
@@ -231,14 +199,7 @@ class TestCube(unittest.TestCase):
 
     def test_turn_clockwise_D(self):
         """Test turning a face of the cube clockwise."""
-        cube = Cube(
-            pack_8_colours([Colour.B] * 8),
-            pack_8_colours([Colour.G] * 8),
-            pack_8_colours([Colour.W] * 8),
-            pack_8_colours([Colour.Y] * 8),
-            pack_8_colours([Colour.R] * 8),
-            pack_8_colours([Colour.O] * 8),
-        )
+        cube = replace(SOLVED)
         cube._turn_clockwise('D')
         expected_str = (
             "Y         Y         Y \n"
@@ -257,14 +218,7 @@ class TestCube(unittest.TestCase):
 
     def test_turn_clockwise_B(self):
         """Test turning a face of the cube clockwise."""
-        cube = Cube(
-            pack_8_colours([Colour.B] * 8),
-            pack_8_colours([Colour.G] * 8),
-            pack_8_colours([Colour.W] * 8),
-            pack_8_colours([Colour.Y] * 8),
-            pack_8_colours([Colour.R] * 8),
-            pack_8_colours([Colour.O] * 8),
-        )
+        cube = replace(SOLVED)
         cube._turn_clockwise('B')
         expected_str = (
             "G         G         G \n"
@@ -283,27 +237,13 @@ class TestCube(unittest.TestCase):
 
     def test_turn_invalid_face(self):
         """Test turning a face of the cube with an invalid face."""
-        cube = Cube(
-            pack_8_colours([Colour.B] * 8),
-            pack_8_colours([Colour.G] * 8),
-            pack_8_colours([Colour.W] * 8),
-            pack_8_colours([Colour.Y] * 8),
-            pack_8_colours([Colour.R] * 8),
-            pack_8_colours([Colour.O] * 8),
-        )
+        cube = replace(SOLVED)
         with self.assertRaises(ValueError):
             cube._turn_clockwise('X')
 
     def test_turn_clockwise_RU(self):
         """Test turning a face of the cube clockwise."""
-        cube = Cube(
-            pack_8_colours([Colour.B] * 8),
-            pack_8_colours([Colour.G] * 8),
-            pack_8_colours([Colour.W] * 8),
-            pack_8_colours([Colour.Y] * 8),
-            pack_8_colours([Colour.R] * 8),
-            pack_8_colours([Colour.O] * 8),
-        )
+        cube = replace(SOLVED)
         cube._turn_clockwise('R')
         cube._turn_clockwise('U')
         expected_str = (
@@ -323,14 +263,7 @@ class TestCube(unittest.TestCase):
 
     def test_turn_clockwise_UF(self):
         """Test turning a face of the cube clockwise."""
-        cube = Cube(
-            pack_8_colours([Colour.B] * 8),
-            pack_8_colours([Colour.G] * 8),
-            pack_8_colours([Colour.W] * 8),
-            pack_8_colours([Colour.Y] * 8),
-            pack_8_colours([Colour.R] * 8),
-            pack_8_colours([Colour.O] * 8),
-        )
+        cube = replace(SOLVED)
         cube._turn_clockwise('U')
         cube._turn_clockwise('F')
         expected_str = (
@@ -350,14 +283,7 @@ class TestCube(unittest.TestCase):
 
     def test_turn_clockwise_FL(self):
         """Test turning a face of the cube clockwise."""
-        cube = Cube(
-            pack_8_colours([Colour.B] * 8),
-            pack_8_colours([Colour.G] * 8),
-            pack_8_colours([Colour.W] * 8),
-            pack_8_colours([Colour.Y] * 8),
-            pack_8_colours([Colour.R] * 8),
-            pack_8_colours([Colour.O] * 8),
-        )
+        cube = replace(SOLVED)
         cube._turn_clockwise('F')
         cube._turn_clockwise('L')
         expected_str = (
@@ -377,14 +303,7 @@ class TestCube(unittest.TestCase):
 
     def test_turn_clockwise_LD(self):
         """Test turning a face of the cube clockwise."""
-        cube = Cube(
-            pack_8_colours([Colour.B] * 8),
-            pack_8_colours([Colour.G] * 8),
-            pack_8_colours([Colour.W] * 8),
-            pack_8_colours([Colour.Y] * 8),
-            pack_8_colours([Colour.R] * 8),
-            pack_8_colours([Colour.O] * 8),
-        )
+        cube = replace(SOLVED)
         cube._turn_clockwise('L')
         cube._turn_clockwise('D')
         expected_str = (
@@ -404,14 +323,7 @@ class TestCube(unittest.TestCase):
 
     def test_turn_clockwise_DB(self):
         """Test turning a face of the cube clockwise."""
-        cube = Cube(
-            pack_8_colours([Colour.B] * 8),
-            pack_8_colours([Colour.G] * 8),
-            pack_8_colours([Colour.W] * 8),
-            pack_8_colours([Colour.Y] * 8),
-            pack_8_colours([Colour.R] * 8),
-            pack_8_colours([Colour.O] * 8),
-        )
+        cube = replace(SOLVED)
         cube._turn_clockwise('D')
         cube._turn_clockwise('B')
         expected_str = (
@@ -431,14 +343,7 @@ class TestCube(unittest.TestCase):
 
     def test_turn_clockwise_BR(self):
         """Test turning a face of the cube clockwise."""
-        cube = Cube(
-            pack_8_colours([Colour.B] * 8),
-            pack_8_colours([Colour.G] * 8),
-            pack_8_colours([Colour.W] * 8),
-            pack_8_colours([Colour.Y] * 8),
-            pack_8_colours([Colour.R] * 8),
-            pack_8_colours([Colour.O] * 8),
-        )
+        cube = replace(SOLVED)
         cube._turn_clockwise('B')
         cube._turn_clockwise('R')
         expected_str = (
@@ -460,22 +365,8 @@ class TestCube(unittest.TestCase):
         """Test turning a face of the cube counterclockwise."""
         faces = ["R", "L", "U", "D", "F", "B"]
         for face in faces:
-            cube_0 = Cube(
-                pack_8_colours([Colour.B] * 8),
-                pack_8_colours([Colour.G] * 8),
-                pack_8_colours([Colour.W] * 8),
-                pack_8_colours([Colour.Y] * 8),
-                pack_8_colours([Colour.R] * 8),
-                pack_8_colours([Colour.O] * 8),
-            )
-            cube_1 = Cube(
-                pack_8_colours([Colour.B] * 8),
-                pack_8_colours([Colour.G] * 8),
-                pack_8_colours([Colour.W] * 8),
-                pack_8_colours([Colour.Y] * 8),
-                pack_8_colours([Colour.R] * 8),
-                pack_8_colours([Colour.O] * 8),
-            )
+            cube_0 = replace(SOLVED)
+            cube_1 = replace(SOLVED)
             cube_0._turn_clockwise(face)
             cube_0._turn_clockwise(face)
             cube_0._turn_clockwise(face)
@@ -487,22 +378,8 @@ class TestCube(unittest.TestCase):
         faces = ["R", "L", "U", "D", "F", "B"]
         for face_0 in faces:
             for face_1 in faces:
-                cube_0 = Cube(
-                    pack_8_colours([Colour.B] * 8),
-                    pack_8_colours([Colour.G] * 8),
-                    pack_8_colours([Colour.W] * 8),
-                    pack_8_colours([Colour.Y] * 8),
-                    pack_8_colours([Colour.R] * 8),
-                    pack_8_colours([Colour.O] * 8),
-                )
-                cube_1 = Cube(
-                    pack_8_colours([Colour.B] * 8),
-                    pack_8_colours([Colour.G] * 8),
-                    pack_8_colours([Colour.W] * 8),
-                    pack_8_colours([Colour.Y] * 8),
-                    pack_8_colours([Colour.R] * 8),
-                    pack_8_colours([Colour.O] * 8),
-                )
+                cube_0 = replace(SOLVED)
+                cube_1 = replace(SOLVED)
                 # turn one face first
                 cube_0._turn_clockwise(face_0)
                 cube_1._turn_clockwise(face_0)
@@ -518,22 +395,8 @@ class TestCube(unittest.TestCase):
         """Test turning a face of the cube twice."""
         faces = ["R", "L", "U", "D", "F", "B"]
         for face in faces:
-            cube_0 = Cube(
-                pack_8_colours([Colour.B] * 8),
-                pack_8_colours([Colour.G] * 8),
-                pack_8_colours([Colour.W] * 8),
-                pack_8_colours([Colour.Y] * 8),
-                pack_8_colours([Colour.R] * 8),
-                pack_8_colours([Colour.O] * 8),
-            )
-            cube_1 = Cube(
-                pack_8_colours([Colour.B] * 8),
-                pack_8_colours([Colour.G] * 8),
-                pack_8_colours([Colour.W] * 8),
-                pack_8_colours([Colour.Y] * 8),
-                pack_8_colours([Colour.R] * 8),
-                pack_8_colours([Colour.O] * 8),
-            )
+            cube_0 = replace(SOLVED)
+            cube_1 = replace(SOLVED)
             cube_0._turn_clockwise(face)
             cube_0._turn_clockwise(face)
             cube_1._turn_double(face)
@@ -544,22 +407,8 @@ class TestCube(unittest.TestCase):
         faces = ["R", "L", "U", "D", "F", "B"]
         for face_0 in faces:
             for face_1 in faces:
-                cube_0 = Cube(
-                    pack_8_colours([Colour.B] * 8),
-                    pack_8_colours([Colour.G] * 8),
-                    pack_8_colours([Colour.W] * 8),
-                    pack_8_colours([Colour.Y] * 8),
-                    pack_8_colours([Colour.R] * 8),
-                    pack_8_colours([Colour.O] * 8),
-                )
-                cube_1 = Cube(
-                    pack_8_colours([Colour.B] * 8),
-                    pack_8_colours([Colour.G] * 8),
-                    pack_8_colours([Colour.W] * 8),
-                    pack_8_colours([Colour.Y] * 8),
-                    pack_8_colours([Colour.R] * 8),
-                    pack_8_colours([Colour.O] * 8),
-                )
+                cube_0 = replace(SOLVED)
+                cube_1 = replace(SOLVED)
                 # turn one face first
                 cube_0._turn_clockwise(face_0)
                 cube_1._turn_clockwise(face_0)
@@ -576,22 +425,8 @@ class TestCube(unittest.TestCase):
         modifiers = ["", "'", "2"]
         for face in faces:
             for modifier in modifiers:
-                cube_0 = Cube(
-                    pack_8_colours([Colour.B] * 8),
-                    pack_8_colours([Colour.G] * 8),
-                    pack_8_colours([Colour.W] * 8),
-                    pack_8_colours([Colour.Y] * 8),
-                    pack_8_colours([Colour.R] * 8),
-                    pack_8_colours([Colour.O] * 8),
-                )
-                cube_1 = Cube(
-                    pack_8_colours([Colour.B] * 8),
-                    pack_8_colours([Colour.G] * 8),
-                    pack_8_colours([Colour.W] * 8),
-                    pack_8_colours([Colour.Y] * 8),
-                    pack_8_colours([Colour.R] * 8),
-                    pack_8_colours([Colour.O] * 8),
-                )
+                cube_0 = replace(SOLVED)
+                cube_1 = replace(SOLVED)
                 cube_0.turn(face + modifier)
                 match modifier:
                     case "":
@@ -608,13 +443,6 @@ class TestCube(unittest.TestCase):
         modifiers = ['"', "3"]
         for face in faces:
             for modifier in modifiers:
-                cube = Cube(
-                    pack_8_colours([Colour.B] * 8),
-                    pack_8_colours([Colour.G] * 8),
-                    pack_8_colours([Colour.W] * 8),
-                    pack_8_colours([Colour.Y] * 8),
-                    pack_8_colours([Colour.R] * 8),
-                    pack_8_colours([Colour.O] * 8),
-                )
+                cube = replace(SOLVED)
                 with self.assertRaises(ValueError):
                     cube.turn(face + modifier)
