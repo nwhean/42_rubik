@@ -28,6 +28,20 @@ def unpack_8_colours(packed: int) -> list[Colour]:
         packed >>= 8
     return colours
 
+def rotate_left(value: int, shift: int, max_bits: int = 64) -> int:
+    """Rotate a value to the left by a given number of bits."""
+    value &= (1 << max_bits) - 1    # only consider the max_bits
+    shift %= max_bits
+    return ((value << shift) | (value >> (max_bits - shift))) \
+            & ((1 << max_bits) - 1)     # fit within max_bits
+
+def rotate_right(value: int, shift: int, max_bits: int = 64) -> int:
+    """Rotate a value to the right by a given number of bits."""
+    value &= (1 << max_bits) - 1    # only consider the max_bits
+    shift %= max_bits
+    return ((value >> shift) | (value << (max_bits - shift))) \
+            & ((1 << max_bits) - 1)     # fit within max_bits
+
 
 @dataclass(slots=True)
 class Cube:
@@ -57,3 +71,106 @@ class Cube:
             "  {}   {}   R   {}   {}   \n".format(c["L"][4], c["F"][7], c["F"][3], c["R"][4]) + \
             "    {}     {}     {}     \n".format(c["F"][6], c["F"][5], c["F"][4]) + \
             "{}         {}         {} \n".format(c["D"][2], c["D"][3], c["D"][4])
+
+    def _turn_clockwise(self, face: str) -> None:
+        """Turn a face of the cube clockwise."""
+        # Rotate the face itself
+        tiles: int = getattr(self, face)
+        tiles = rotate_left(tiles, 16, 64)
+        setattr(self, face, tiles)
+
+        # rotate the adjacent faces
+        match face:
+            case "R":
+                self._turn_adj(["U", "F", "D", "B"], [2, 2, 4, 4])
+            case "U":
+                self._turn_adj(["R", "B", "L", "F"], [6, 6, 0, 0])
+            case "F":
+                self._turn_adj(["L", "D", "R", "U"], [2, 2, 4, 4])
+            case "L":
+                self._turn_adj(["F", "U", "B", "D"], [6, 6, 0, 0])
+            case "D":
+                self._turn_adj(["B", "R", "F", "L"], [2, 2, 4, 4])
+            case "B":
+                self._turn_adj(["D", "L", "U", "R"], [6, 6, 0, 0])
+            case _:
+                raise ValueError(f"Invalid face: {face}")
+
+    def _turn_counterclockwise(self, face: str) -> None:
+        """Turn a face of the cube counterclockwise."""
+        # Rotate the face itself
+        tiles: int = getattr(self, face)
+        tiles = rotate_right(tiles, 16, 64)
+        setattr(self, face, tiles)
+
+        # rotate the adjacent faces
+        match face:
+            case "R":
+                self._turn_adj(["B", "D", "F", "U"], [4, 4, 2, 2])
+            case "U":
+                self._turn_adj(["F", "L", "B", "R"], [0, 0, 6, 6])
+            case "F":
+                self._turn_adj(["U", "R", "D", "L"], [4, 4, 2, 2])
+            case "L":
+                self._turn_adj(["D", "B", "U", "F"], [0, 0, 6, 6])
+            case "D":
+                self._turn_adj(["L", "F", "R", "B"], [4, 4, 2, 2])
+            case "B":
+                self._turn_adj(["R", "U", "L", "D"], [0, 0, 6, 6])
+            case _:
+                raise ValueError(f"Invalid face: {face}")
+
+    def _turn_double(self, face: str) -> None:
+        """Turn a face of the cube twice."""
+        # Rotate the face itself
+        tiles: int = getattr(self, face)
+        tiles = rotate_left(tiles, 32, 64)
+        setattr(self, face, tiles)
+
+        # rotate the adjacent faces
+        match face:
+            case "R":
+                self._turn_adj(["U", "D"], [2, 4])
+                self._turn_adj(["F", "B"], [2, 4])
+            case "U":
+                self._turn_adj(["R", "L"], [6, 0])
+                self._turn_adj(["B", "F"], [6, 0])
+            case "F":
+                self._turn_adj(["L", "R"], [2, 4])
+                self._turn_adj(["D", "U"], [2, 4])
+            case "L":
+                self._turn_adj(["F", "B"], [6, 0])
+                self._turn_adj(["U", "D"], [6, 0])
+            case "D":
+                self._turn_adj(["B", "F"], [2, 4])
+                self._turn_adj(["R", "L"], [2, 4])
+            case "B":
+                self._turn_adj(["D", "U"], [6, 0])
+                self._turn_adj(["L", "R"], [6, 0])
+            case _:
+                raise ValueError(f"Invalid face: {face}")
+
+    def _turn_adj(self, faces: list[str], indices: list[int]) -> None:
+        """Rotate the adjacent edges of a cube when turning a face."""
+        # get all the tiles as local variables
+        tiles: list[int] = [getattr(self, face) for face in faces]
+
+        # align all relevant tiles to the rightmost position
+        for i, tile in enumerate(tiles):
+            tiles[i] = rotate_right(tile, indices[i] * 8)
+
+        # get the first edge
+        temp_edge = tiles[0] & 0xFFFFFF
+
+        for i in range(len(faces) - 1):
+            next_edge = tiles[i + 1] & 0xFFFFFF
+            tiles[i] &= ~(0xFFFFFF)     # clear the edge
+            tiles[i] |= next_edge       # update the edge
+
+        tiles[-1] &= ~(0xFFFFFF)    # clear the last edge
+        tiles[-1] |= temp_edge      # update the last edge
+
+        # align all relevant tiles back to their original position
+        for i, tile in enumerate(tiles):
+            tiles[i] = rotate_left(tile, indices[i] * 8)
+            setattr(self, faces[i], tiles[i])
