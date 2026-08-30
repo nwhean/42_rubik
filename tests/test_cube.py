@@ -101,6 +101,30 @@ class TestCube(unittest.TestCase):
         )
         self.assertEqual(str(solved), expected_str)
 
+    def test_cube_hash(self):
+        """Test that the hash of the cube is consistent."""
+        cube_0 = Cube(
+            pack_8_colours([Colour.B] * 8),
+            pack_8_colours([Colour.G] * 8),
+            pack_8_colours([Colour.W] * 8),
+            pack_8_colours([Colour.Y] * 8),
+            pack_8_colours([Colour.R] * 8),
+            pack_8_colours([Colour.O] * 8),
+        )
+        cube_1 = Cube(
+            pack_8_colours([Colour.B] * 8),
+            pack_8_colours([Colour.G] * 8),
+            pack_8_colours([Colour.W] * 8),
+            pack_8_colours([Colour.Y] * 8),
+            pack_8_colours([Colour.R] * 8),
+            pack_8_colours([Colour.O] * 8),
+        )
+        self.assertEqual(hash(cube_0), hash(cube_1))
+
+        # Turn a face of the cube and check that the hash changes
+        cube_1._turn_clockwise('R')
+        self.assertNotEqual(hash(cube_0), hash(cube_1))
+
     def test_turn_clockwise_R(self):
         """Test turning a face of the cube clockwise."""
         cube = Cube(

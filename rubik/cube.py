@@ -1,5 +1,5 @@
 """Represent the state of a Rubik's Cube."""
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 
 class Colour(Enum):
@@ -71,6 +71,20 @@ class Cube:
             "  {}   {}   R   {}   {}   \n".format(c["L"][4], c["F"][7], c["F"][3], c["R"][4]) + \
             "    {}     {}     {}     \n".format(c["F"][6], c["F"][5], c["F"][4]) + \
             "{}         {}         {} \n".format(c["D"][2], c["D"][3], c["D"][4])
+
+    def __hash__(self) -> int:
+        """Return the hash of the cube."""
+        faces = ["R", "L", "U", "D", "F", "B"]
+        return hash(tuple(getattr(self, face) for face in faces))
+
+    def __eq__(self, other: object) -> bool:
+        """Check if two cubes are equal."""
+        if self is other:
+            return True
+        if not isinstance(other, Cube):
+            return NotImplemented
+        return (self.R, self.L, self.U, self.D, self.F, self.B) == \
+                (other.R, other.L, other.U, other.D, other.F, other.B)
 
     def _turn_clockwise(self, face: str) -> None:
         """Turn a face of the cube clockwise."""
