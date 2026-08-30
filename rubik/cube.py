@@ -75,7 +75,10 @@ class Cube:
     def _turn_clockwise(self, face: str) -> None:
         """Turn a face of the cube clockwise."""
         # Rotate the face itself
-        tiles: int = getattr(self, face)
+        try:
+            tiles: int = getattr(self, face)
+        except AttributeError:
+            raise ValueError(f"Invalid face: {face}")
         tiles = rotate_left(tiles, 16, 64)
         setattr(self, face, tiles)
 
@@ -99,7 +102,10 @@ class Cube:
     def _turn_counterclockwise(self, face: str) -> None:
         """Turn a face of the cube counterclockwise."""
         # Rotate the face itself
-        tiles: int = getattr(self, face)
+        try:
+            tiles: int = getattr(self, face)
+        except AttributeError:
+            raise ValueError(f"Invalid face: {face}")
         tiles = rotate_right(tiles, 16, 64)
         setattr(self, face, tiles)
 
@@ -123,7 +129,10 @@ class Cube:
     def _turn_double(self, face: str) -> None:
         """Turn a face of the cube twice."""
         # Rotate the face itself
-        tiles: int = getattr(self, face)
+        try:
+            tiles: int = getattr(self, face)
+        except AttributeError:
+            raise ValueError(f"Invalid face: {face}")
         tiles = rotate_left(tiles, 32, 64)
         setattr(self, face, tiles)
 
@@ -174,3 +183,16 @@ class Cube:
         for i, tile in enumerate(tiles):
             tiles[i] = rotate_left(tile, indices[i] * 8)
             setattr(self, faces[i], tiles[i])
+
+    def turn(self, command: str) -> None:
+        """Turn a face of the cube based on a command string."""
+        face, modifier = command[0], command[1:]
+        match (face, modifier):
+            case (_, ""):
+                self._turn_clockwise(face)
+            case (_, "'"):
+                self._turn_counterclockwise(face)
+            case (_, "2"):
+                self._turn_double(face)
+            case _:
+                raise ValueError(f"Invalid command: {command}")

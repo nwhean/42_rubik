@@ -257,6 +257,19 @@ class TestCube(unittest.TestCase):
         )
         self.assertEqual(expected_str, str(cube))
 
+    def test_turn_invalid_face(self):
+        """Test turning a face of the cube with an invalid face."""
+        cube = Cube(
+            pack_8_colours([Colour.B] * 8),
+            pack_8_colours([Colour.G] * 8),
+            pack_8_colours([Colour.W] * 8),
+            pack_8_colours([Colour.Y] * 8),
+            pack_8_colours([Colour.R] * 8),
+            pack_8_colours([Colour.O] * 8),
+        )
+        with self.assertRaises(ValueError):
+            cube._turn_clockwise('X')
+
     def test_turn_clockwise_RU(self):
         """Test turning a face of the cube clockwise."""
         cube = Cube(
@@ -532,3 +545,52 @@ class TestCube(unittest.TestCase):
                 cube_0._turn_clockwise(face_1)
                 cube_1._turn_double(face_1)
                 self.assertEqual(str(cube_0), str(cube_1))
+
+    def test_turn(self):
+        """Test public method of turning a face of the cube."""
+        faces = ["R", "L", "U", "D", "F", "B"]
+        modifiers = ["", "'", "2"]
+        for face in faces:
+            for modifier in modifiers:
+                cube_0 = Cube(
+                    pack_8_colours([Colour.B] * 8),
+                    pack_8_colours([Colour.G] * 8),
+                    pack_8_colours([Colour.W] * 8),
+                    pack_8_colours([Colour.Y] * 8),
+                    pack_8_colours([Colour.R] * 8),
+                    pack_8_colours([Colour.O] * 8),
+                )
+                cube_1 = Cube(
+                    pack_8_colours([Colour.B] * 8),
+                    pack_8_colours([Colour.G] * 8),
+                    pack_8_colours([Colour.W] * 8),
+                    pack_8_colours([Colour.Y] * 8),
+                    pack_8_colours([Colour.R] * 8),
+                    pack_8_colours([Colour.O] * 8),
+                )
+                cube_0.turn(face + modifier)
+                match modifier:
+                    case "":
+                        cube_1._turn_clockwise(face)
+                    case "'":
+                        cube_1._turn_counterclockwise(face)
+                    case "2":
+                        cube_1._turn_double(face)
+                self.assertEqual(str(cube_0), str(cube_1))
+
+    def test_turn_invalid(self):
+        """Test turning a face of the cube with invalid command."""
+        faces = ["R", "L", "U", "D", "F", "B", "X"]
+        modifiers = ['"', "3"]
+        for face in faces:
+            for modifier in modifiers:
+                cube = Cube(
+                    pack_8_colours([Colour.B] * 8),
+                    pack_8_colours([Colour.G] * 8),
+                    pack_8_colours([Colour.W] * 8),
+                    pack_8_colours([Colour.Y] * 8),
+                    pack_8_colours([Colour.R] * 8),
+                    pack_8_colours([Colour.O] * 8),
+                )
+                with self.assertRaises(ValueError):
+                    cube.turn(face + modifier)
