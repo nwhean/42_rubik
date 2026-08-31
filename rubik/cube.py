@@ -224,12 +224,13 @@ class Cube:
             case _:
                 raise ValueError(f"Invalid command: {command}")
 
-        self._last_move = face
+        self._last_move = command
 
     def successors(self) -> list["Cube"]:
         """Return a list of all neighbouring cubes."""
         successors = []
-        for face in TRANSITION_TABLE[self._last_move]:
+        last_face = self._last_move[0] if self._last_move else None
+        for face in TRANSITION_TABLE[last_face]:
             for modifier in ["", "'", "2"]:
                 new_cube = replace(self)
                 new_cube.turn(face + modifier)

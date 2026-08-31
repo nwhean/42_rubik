@@ -477,4 +477,4 @@ class TestCube(unittest.TestCase):
             # ensure that the successors' last move are allowed
             allowed_faces = set(TRANSITION_TABLE[face])
             for succ in successors:
-                self.assertIn(succ._last_move, allowed_faces)
+                self.assertIn(succ._last_move[0], allowed_faces)
