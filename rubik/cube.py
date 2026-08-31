@@ -226,12 +226,12 @@ class Cube:
 
         self._last_move = face
 
-    def neighbours(self) -> list["Cube"]:
+    def successors(self) -> list["Cube"]:
         """Return a list of all neighbouring cubes."""
-        neighbours = []
+        successors = []
         for face in TRANSITION_TABLE[self._last_move]:
             for modifier in ["", "'", "2"]:
                 new_cube = replace(self)
                 new_cube.turn(face + modifier)
-                neighbours.append(new_cube)
-        return neighbours
+                successors.append(new_cube)
+        return successors

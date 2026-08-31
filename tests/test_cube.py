@@ -455,26 +455,26 @@ class TestCube(unittest.TestCase):
             "D": "U",   # U cannot succeed D
             "B": "F",   # F cannot succeed B
         }
-        for face, neighbours in TRANSITION_TABLE.items():
+        for face, successors in TRANSITION_TABLE.items():
             self.assertEqual(
-                set(neighbours),
+                set(successors),
                 set(["R", "L", "U", "D", "F", "B"])
                 - {face}    # a face cannot succeed by the same face
                 - {exclude.get(face, None)}
             )
 
-    def test_neighbours(self):
-        """Test that neighbours are generated according to transition table."""
+    def test_successors(self):
+        """Test that successors are generated according to transition table."""
         faces = [None, "R", "L", "U", "D", "F", "B"]
         for face in faces:
             cube = replace(SOLVED)
             if face:
                 cube.turn(face)
 
-            neighbours = cube.neighbours()
-            self.assertEqual(len(neighbours), len(TRANSITION_TABLE[face]) * 3)
+            successors = cube.successors()
+            self.assertEqual(len(successors), len(TRANSITION_TABLE[face]) * 3)
 
-            # ensure that the neighbours' last move are allowed
+            # ensure that the successors' last move are allowed
             allowed_faces = set(TRANSITION_TABLE[face])
-            for neighbour in neighbours:
-                self.assertIn(neighbour._last_move, allowed_faces)
+            for succ in successors:
+                self.assertIn(succ._last_move, allowed_faces)
