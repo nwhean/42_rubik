@@ -31,7 +31,8 @@ COSTS: dict[str, Callable] = {
 def solve(
         node: Cube,
         algo: str,
-        cost: str
+        cost: str,
+        weight: float,
     ) -> tuple[list[Cube], int]:
     """Solve a Rubik's Cube state and return the path and final cost bound."""
     if algo not in ALGORITHMS:
@@ -40,7 +41,7 @@ def solve(
         raise ValueError(f"Unknown cost heuristic: {cost}")
 
     func = ALGORITHMS[algo]
-    return func(node, SOLVED, COSTS[cost])
+    return func(node, SOLVED, COSTS[cost], weight)
 
 
 if __name__ == "__main__":
@@ -67,6 +68,11 @@ if __name__ == "__main__":
         help="heuristic cost function to be used by solver"
     )
 
+    parser.add_argument(
+        "-w", "--weight", type=float, default=2.5,
+        help="weight factor to multiply heuristic cost value"
+    )
+
     args = parser.parse_args()
 
     # scramble the cube
@@ -83,7 +89,7 @@ if __name__ == "__main__":
 
     start_time = time.perf_counter()
     try:
-        path, bound = solve(cube, args.algo, args.cost)
+        path, bound = solve(cube, args.algo, args.cost, args.weight)
     except RuntimeError as err:
         print(f"Solver error: {err}", file=sys.stderr)
         sys.exit(1)

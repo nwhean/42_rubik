@@ -48,7 +48,7 @@ class TestIDAStar(unittest.TestCase):
         """Test search when start state is already the goal."""
         start = MockNode("A")
         goal = MockNode("A")
-        path, bound = ida_star(start, goal, zero_heuristic)
+        path, bound = ida_star(start, goal, zero_heuristic, 1.0)
 
         self.assertEqual(path, [start])
         self.assertEqual(bound, 0.0)
@@ -59,7 +59,7 @@ class TestIDAStar(unittest.TestCase):
         start = MockNode("A", graph)
         goal = MockNode("C", graph)
 
-        path, bound = ida_star(start, goal, zero_heuristic)
+        path, bound = ida_star(start, goal, zero_heuristic, 1.0)
 
         self.assertEqual([node.name for node in path], ["A", "B", "C"])
         self.assertEqual(bound, 2.0)
@@ -76,7 +76,7 @@ class TestIDAStar(unittest.TestCase):
         start = MockNode("A", graph)
         goal = MockNode("E", graph)
 
-        path, bound = ida_star(start, goal, zero_heuristic)
+        path, bound = ida_star(start, goal, zero_heuristic, 1.0)
 
         self.assertEqual([node.name for node in path], ["A", "C", "E"])
         self.assertEqual(bound, 2.0)
@@ -91,7 +91,7 @@ class TestIDAStar(unittest.TestCase):
         start = MockNode("A", graph)
         goal = MockNode("C", graph)
 
-        path, bound = ida_star(start, goal, zero_heuristic)
+        path, bound = ida_star(start, goal, zero_heuristic, 1.0)
 
         self.assertEqual([node.name for node in path], ["A", "B", "C"])
 
@@ -102,7 +102,7 @@ class TestIDAStar(unittest.TestCase):
         goal = MockNode("Z", graph)
 
         with self.assertRaises(RuntimeError):
-            ida_star(start, goal, zero_heuristic)
+            ida_star(start, goal, zero_heuristic, 1.0)
 
     def test_heuristic_pruning(self):
         """Test search behavior with a non-zero admissible heuristic."""
@@ -115,6 +115,6 @@ class TestIDAStar(unittest.TestCase):
         start = MockNode("1", graph)
         goal = MockNode("3", graph)
 
-        path, bound = ida_star(start, goal, numeric_distance_heuristic)
+        path, bound = ida_star(start, goal, numeric_distance_heuristic, 1.0)
 
         self.assertEqual([node.name for node in path], ["1", "2", "3"])
