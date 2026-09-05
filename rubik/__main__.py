@@ -5,18 +5,10 @@ from rubik.algorithm import ida_star
 from rubik.cost import (
     hamming_tile_distance,
     hamming_piece_distance,
+    manhattan_distance,
 )
-from rubik.cube import Colour, Cube, pack_8_colours
+from rubik.cube import Colour, Cube, SOLVED
 
-
-SOLVED = Cube(
-    pack_8_colours([Colour.B] * 8),
-    pack_8_colours([Colour.G] * 8),
-    pack_8_colours([Colour.W] * 8),
-    pack_8_colours([Colour.Y] * 8),
-    pack_8_colours([Colour.R] * 8),
-    pack_8_colours([Colour.O] * 8),
-)
 
 ALGORITHMS: dict[str, Callable] = {
     "ida": ida_star,
@@ -25,6 +17,7 @@ ALGORITHMS: dict[str, Callable] = {
 COSTS: dict[str, Callable] = {
     "hamming_tile": hamming_tile_distance,
     "hamming_piece": hamming_piece_distance,
+    "manhattan": manhattan_distance,
 }
 
 
@@ -63,14 +56,15 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "-c", "--cost", type=str, default="hamming_piece",
+        "-c", "--cost", type=str, default="manhattan",
         choices=list(COSTS.keys()),
-        help="heuristic cost function to be used by solver"
+        help="heuristic cost function to be used by solver. "\
+            "Default = 'manhattan'"
     )
 
     parser.add_argument(
         "-w", "--weight", type=float, default=2.5,
-        help="weight factor to multiply heuristic cost value"
+        help="weight factor to multiply heuristic cost value. Default = 2.5"
     )
 
     args = parser.parse_args()

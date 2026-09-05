@@ -236,3 +236,13 @@ class Cube:
                 new_cube.turn(face + modifier)
                 successors.append(new_cube)
         return successors
+
+
+SOLVED = Cube(
+    pack_8_colours([Colour.B] * 8),
+    pack_8_colours([Colour.G] * 8),
+    pack_8_colours([Colour.W] * 8),
+    pack_8_colours([Colour.Y] * 8),
+    pack_8_colours([Colour.R] * 8),
+    pack_8_colours([Colour.O] * 8),
+)

@@ -10,15 +10,7 @@ from rubik.cube import (
     Colour,
     TRANSITION_TABLE,
     Cube,
-)
-
-SOLVED = Cube(
-    pack_8_colours([Colour.B] * 8),
-    pack_8_colours([Colour.G] * 8),
-    pack_8_colours([Colour.W] * 8),
-    pack_8_colours([Colour.Y] * 8),
-    pack_8_colours([Colour.R] * 8),
-    pack_8_colours([Colour.O] * 8),
+    SOLVED,
 )
 
 
@@ -89,14 +81,7 @@ class TestCube(unittest.TestCase):
 
     def test_cube_str(self):
         """Test string representation of Cube."""
-        solved = Cube(
-            pack_8_colours([Colour.B] * 8),
-            pack_8_colours([Colour.G] * 8),
-            pack_8_colours([Colour.W] * 8),
-            pack_8_colours([Colour.Y] * 8),
-            pack_8_colours([Colour.R] * 8),
-            pack_8_colours([Colour.O] * 8),
-        )
+        solved = replace(SOLVED)
         expected_str = (
             "Y         Y         Y \n"
             "    O     O     O     \n"
