@@ -18,8 +18,8 @@ from ..cube import Cube
 BASE_DIR = Path(__file__).parent / "manhattan_database"
 EDGE_FILE = BASE_DIR / "edge_distance.pickle"
 CORNER_FILE = BASE_DIR / "corner_distance.pickle"
-EDGE_DIST: dict[tuple[int, int, int], int] | None = None
-CORNER_DIST: dict[tuple[int, int, int], int] | None = None
+EDGE_DIST: list[list[list[int]]] | None = None
+CORNER_DIST: list[list[list[int]]] | None = None
 
 
 def read_database() -> None:
@@ -47,6 +47,16 @@ def save_database(edge_dist: dict[tuple[int, int, int], int],
 
     with open(CORNER_FILE, "wb") as f:
         pickle.dump(corner_dist, f)
+
+def _dict_to_list(dist_dict: dict[tuple[int, int, int], int]) \
+        -> list[list[list[int]]]:
+    """Convert a distance dictionary to a 3D list for easier access."""
+    length = max(max(src, dest) for src, dest, _ in dist_dict.keys()) + 1
+    max_ori = max(orientation for _, _, orientation in dist_dict.keys()) + 1
+    result = [[[0] * max_ori for _ in range(length)] for _ in range(length)]
+    for (src, dest, orientation), distance in dist_dict.items():
+        result[src][dest][orientation] = distance
+    return result
 
 def generate_manhattan_distance():
     """Calculates the Manhattan distance between two edge positions."""
@@ -87,7 +97,7 @@ def generate_manhattan_distance():
                 visited.add(succ)
                 queue.append((succ, count + 1))
 
-    return edge_dist, corner_dist
+    return _dict_to_list(edge_dist), _dict_to_list(corner_dist)
 
 def manhattan_distance(start: Cube, goal: Cube = None) -> float:
     """Calculate the admissible Manhattan distance heuristic for IDA*."""
@@ -102,14 +112,14 @@ def manhattan_distance(start: Cube, goal: Cube = None) -> float:
         # for each of the edge, get the start edge id and orientation
         colours = tuple(get_colour(start, *tile) for tile in edge)
         src_edge_id, orientation = EDGE_INDICES[colours]
-        edge_h += EDGE_DIST[(src_edge_id, dest_edge_id, orientation)]
+        edge_h += EDGE_DIST[src_edge_id][dest_edge_id][orientation]
 
     # sum the total manhattan distances for all corners
     corner_h: int = 0
     for dest_corner_id, corner in enumerate(CORNERS):
         colours = tuple(get_colour(start, *tile) for tile in corner)
         src_corner_id, orientation = CORNER_INDICES[colours]
-        corner_h += CORNER_DIST[(src_corner_id, dest_corner_id, orientation)]
+        corner_h += CORNER_DIST[src_corner_id][dest_corner_id][orientation]
 
     return float(max(edge_h / 4, corner_h / 4))
 

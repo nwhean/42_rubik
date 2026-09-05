@@ -46,12 +46,15 @@ class TestManhattanDistance(unittest.TestCase):
         self.assertGreater(len(edge_dist), 0)
         self.assertGreater(len(corner_dist), 0)
 
-        # Verify key structure: (src_id, dest_id, orientation)
-        sample_edge_key = next(iter(edge_dist))
-        self.assertEqual(len(sample_edge_key), 3)
+        # Verify 3D structure of the distance tables
+        self.assertEqual(len(edge_dist), 12)
+        self.assertEqual(len(edge_dist[0]), 12)
+        self.assertEqual(len(edge_dist[0][0]), 2)
 
-        sample_corner_key = next(iter(corner_dist))
-        self.assertEqual(len(sample_corner_key), 3)
+        # Verify 3D structure of the corner distance tables
+        self.assertEqual(len(corner_dist), 8)
+        self.assertEqual(len(corner_dist[0]), 8)
+        self.assertEqual(len(corner_dist[0][0]), 3)
 
     def test_save_and_read_database(self):
         """Test saving and reading database files from disk using a temporary directory."""
@@ -101,9 +104,9 @@ class TestManhattanDistance(unittest.TestCase):
             (1, 2),
         ]
 
-        for target_id, (val_ori, val_flipped) in enumerate(targets):
-            self.assertEqual(edge_dist[(0, target_id, 0)], val_ori)
-            self.assertEqual(edge_dist[(0, target_id, 1)], val_flipped)
+        for target_id, vals in enumerate(targets):
+            for i, val in enumerate(vals):
+                self.assertEqual(edge_dist[0][target_id][i], val)
 
     def test_corner_distances(self):
         """Test that corner distances are consistent with the database."""
@@ -123,7 +126,6 @@ class TestManhattanDistance(unittest.TestCase):
             (1, 2, 2),
         ]
 
-        for target_id, (val_ori0, val_ori1, val_ori2) in enumerate(targets):
-            self.assertEqual(corner_dist[(0, target_id, 0)], val_ori0)
-            self.assertEqual(corner_dist[(0, target_id, 1)], val_ori1)
-            self.assertEqual(corner_dist[(0, target_id, 2)], val_ori2)
+        for target_id, vals in enumerate(targets):
+            for i, val in enumerate(vals):
+                self.assertEqual(corner_dist[0][target_id][i], val)
