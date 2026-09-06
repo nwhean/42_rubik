@@ -4,8 +4,8 @@ from dataclasses import replace
 from pathlib import Path
 import pickle
 
-from .common import get_colour
-from ..cube import Cube, Colour, SOLVED
+from ..common import get_colour
+from ...cube import Cube, Colour, SOLVED
 
 BASE_DIR = Path(__file__).parent / "thistlethwaite_database"
 G0_FILE = BASE_DIR / "G0_distance.pickle"
