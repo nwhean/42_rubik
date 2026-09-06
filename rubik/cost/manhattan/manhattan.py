@@ -4,7 +4,7 @@ from dataclasses import replace
 from pathlib import Path
 import pickle
 
-from .common import (
+from ..common import (
     SOLVED,
     EDGES,
     EDGE_INDICES,
@@ -12,7 +12,7 @@ from .common import (
     CORNER_INDICES,
     get_colour,
 )
-from ..cube import Cube
+from ...cube import Cube
 
 
 BASE_DIR = Path(__file__).parent / "manhattan_database"

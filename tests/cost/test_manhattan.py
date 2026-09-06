@@ -6,7 +6,8 @@ import unittest
 from unittest.mock import patch
 
 from rubik.cost.common import SOLVED
-from rubik.cost.manhattan import (
+from rubik.cost.manhattan import manhattan
+from rubik.cost.manhattan.manhattan import (
     generate_manhattan_distance,
     manhattan_distance,
     read_database,
@@ -65,9 +66,9 @@ class TestManhattanDistance(unittest.TestCase):
             edge_file = tmp_path / "edge_distance.pickle"
             corner_file = tmp_path / "corner_distance.pickle"
 
-            with patch("rubik.cost.manhattan.EDGE_FILE", edge_file), \
-                 patch("rubik.cost.manhattan.CORNER_FILE", corner_file), \
-                 patch("rubik.cost.manhattan.BASE_DIR", tmp_path):
+            with patch.object(manhattan, "EDGE_FILE", edge_file), \
+                 patch.object(manhattan, "CORNER_FILE", corner_file), \
+                 patch.object(manhattan, "BASE_DIR", tmp_path):
 
                 save_database(edge_dist, corner_dist)
 
@@ -75,12 +76,11 @@ class TestManhattanDistance(unittest.TestCase):
                 self.assertTrue(corner_file.exists())
 
                 # Reset cached module globals and test loading
-                with patch("rubik.cost.manhattan.EDGE_DIST", None), \
-                     patch("rubik.cost.manhattan.CORNER_DIST", None):
+                with patch.object(manhattan, "EDGE_DIST", None), \
+                     patch.object(manhattan, "CORNER_DIST", None):
                     read_database()
-                    import rubik.cost.manhattan as m
-                    self.assertIsNotNone(m.EDGE_DIST)
-                    self.assertIsNotNone(m.CORNER_DIST)
+                    self.assertIsNotNone(manhattan.EDGE_DIST)
+                    self.assertIsNotNone(manhattan.CORNER_DIST)
 
     def test_edge_distances(self):
         """Test that edge distances are consistent with the database."""
