@@ -5,3 +5,7 @@ from .thistlethwaite0 import G0_DIST
 from .thistlethwaite1 import read_database as read_database1
 read_database1()
 from .thistlethwaite1 import G1_DIST
+
+from .thistlethwaite2 import read_database as read_database2
+read_database2()
+from .thistlethwaite2 import G2_DIST
