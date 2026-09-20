@@ -1,12 +1,13 @@
 """Calculations related to the Thistlethwaite G0 algorithm."""
-from collections import deque
-from dataclasses import replace
+from functools import partial
 import pickle
 
-from .common import Tile, BASE_DIR, FB_COLOURS, EDGES
+from .common import Tile, BASE_DIR, FB_COLOURS, EDGES, generate_database
 from ..common import get_colour
 from ...cube import Cube, Colour, SOLVED
 
+
+G0_MAX_STATE = 2_048
 G0_FILE = BASE_DIR / "G0_distance.pickle"
 G0_DIST: list[int] | None = None
 
@@ -76,35 +77,13 @@ def cube_g0_index(cube: Cube) -> int:
         result = (result << 1) | val
     return result
 
-def generate_g0_database() -> list[int]:
-    """Use Breadth First Search algorithm to compute distance to G1 state."""
-    MAX_STATE = 2_048
-    result = [-1] * MAX_STATE
-    solved: Cube = replace(SOLVED)
-    queue = deque([(replace(SOLVED), 0)])
-    index = cube_g0_index(solved)
-    visited = {index}
-    result[index] = 0
-
-    while queue and len(visited) < MAX_STATE:
-        cube: Cube
-        count: int
-        cube, count = queue.popleft()
-
-        for move in G0_MOVES:
-            cube_next = replace(cube)
-            cube_next.turn(move)
-            index = cube_g0_index(cube_next)
-
-            if index not in visited:
-                visited.add(index)
-                result[index] = count + 1
-                queue.append((cube_next, count + 1))
-
-    return result
+generate_g0_database = partial(
+    generate_database,cube_g0_index, G0_MAX_STATE, G0_MOVES)
 
 
 if __name__ == "__main__":
     print("Generating G0 database...")
     g0_dist = generate_g0_database()
     save_database(g0_dist)
+    print("Reached states:", len([i for i in g0_dist if i > -1]))
+    print("Max moves:", max(g0_dist))

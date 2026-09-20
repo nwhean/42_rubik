@@ -1,7 +1,11 @@
 """Codes used by Thistlethwaite files"""
+from collections import deque
+from collections.abc import Callable
+from dataclasses import replace
 from pathlib import Path
+import sys
 
-from ...cube import Colour
+from ...cube import Colour, SOLVED
 
 
 Tile = tuple[str, int]
@@ -38,3 +42,56 @@ CORNERS: list[tuple[Tile, Tile, Tile]] = [
     (("B", 4), ("D", 6), ("R", 2)),     # BDR
     (("B", 6), ("R", 0), ("U", 2)),     # BRU
 ]
+
+def print_progress_bar(iteration, total, bar_length=50):
+    """Print a progress bar."""
+    percent = int(100 * (iteration / total))
+
+    # skip the I/O if percent hasn't changed
+    last_percent = getattr(print_progress_bar, 'last_percent', None)
+    if last_percent == percent and iteration != 0 and iteration != total:
+        return
+
+    # store the last percent
+    print_progress_bar.last_percent = percent
+
+    filled_length = int(bar_length * iteration // total)
+    bar = '█' * filled_length + '-' * (bar_length - filled_length)
+
+    # \r moves the cursor back to the start of the line
+    sys.stdout.write(f'\rProgress: |{bar}| {percent}% Complete')
+    sys.stdout.flush()
+
+    if iteration == total:
+        sys.stdout.write('\n')
+
+def generate_database(
+        index_func: Callable[[Cube], int],
+        max_state: int,
+        allowed_moves: list[str]
+    ) -> list[int]:
+    """Use Breadth First Search algorithm to compute distance database."""
+    result = [-1] * max_state
+    solved: Cube = replace(SOLVED)
+    queue = deque([(replace(SOLVED), 0)])
+    index = index_func(solved)
+    result[index] = 0
+    iteration = 1
+
+    while queue:
+        cube: Cube
+        count: int
+        cube, count = queue.popleft()
+
+        for move in allowed_moves:
+            cube_next = replace(cube)
+            cube_next.turn(move)
+            index = index_func(cube_next)
+
+            if result[index] == -1:
+                iteration += 1
+                print_progress_bar(iteration, max_state)
+                result[index] = count + 1
+                queue.append((cube_next, count + 1))
+
+    return result

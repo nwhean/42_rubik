@@ -1,13 +1,21 @@
 """Calculations related to the Thistlethwaite G1 algorithm."""
-from collections import deque
-from dataclasses import replace
+from functools import partial
 import math
 import pickle
 
-from .common import Tile, BASE_DIR, FB_COLOURS, EDGES, CORNERS
+from .common import (
+    Tile,
+    BASE_DIR,
+    FB_COLOURS,
+    EDGES,
+    CORNERS,
+    generate_database,
+)
 from ..common import get_colour
 from ...cube import Cube, Colour, SOLVED
 
+
+G1_MAX_STATE = 1_082_565
 G1_FILE = BASE_DIR / "G1_distance.pickle"
 G1_DIST: list[int] | None = None
 
@@ -84,35 +92,13 @@ def cube_g1_index(cube: Cube) -> int:
         combo += math.comb(val, i)
     return result * 495 + combo
 
-def generate_g1_database() -> list[int]:
-    """Use Breadth First Search algorithm to compute distance to G2 state."""
-    MAX_STATE = 1_082_565
-    result = [-1] * MAX_STATE
-    solved: Cube = replace(SOLVED)
-    queue = deque([(replace(SOLVED), 0)])
-    index = cube_g1_index(solved)
-    visited = {index}
-    result[index] = 0
-
-    while queue and len(visited) < MAX_STATE:
-        cube: Cube
-        count: int
-        cube, count = queue.popleft()
-
-        for move in G1_MOVES:
-            cube_next = replace(cube)
-            cube_next.turn(move)
-            index = cube_g1_index(cube_next)
-
-            if index not in visited:
-                visited.add(index)
-                result[index] = count + 1
-                queue.append((cube_next, count + 1))
-
-    return result
+generate_g1_database = partial(
+    generate_database, cube_g1_index, G1_MAX_STATE, G1_MOVES)
 
 
 if __name__ == "__main__":
     print("Generating G1 database...")
     g1_dist = generate_g1_database()
     save_database(g1_dist)
+    print("Reached states:", len([i for i in g1_dist if i > -1]))
+    print("Max moves:", max(g1_dist))

@@ -1,13 +1,14 @@
 """Calculations related to the Thistlethwaite G3 algorithm."""
-from collections import deque
-from dataclasses import replace
+from functools import partial
 import math
 import pickle
 
-from .common import Tile, BASE_DIR
+from .common import Tile, BASE_DIR, generate_database
 from ..common import get_colour
-from ...cube import Cube, Colour, SOLVED
+from ...cube import Cube, Colour
 
+
+G3_MAX_STATE = 663_552
 G3_FILE = BASE_DIR / "G3_distance.pickle"
 G3_DIST: list[int] | None = None
 
@@ -177,30 +178,8 @@ def cube_g3_index(cube: Cube) -> int:
         raise ValueError()
     return result
 
-def generate_g3_database() -> list[int]:
-    """Use Breadth First Search algorithm to compute distance to G4 state."""
-    MAX_STATE = 663_552
-    result = [-1] * MAX_STATE
-    solved: Cube = replace(SOLVED)
-    queue = deque([(replace(SOLVED), 0)])
-    index = cube_g3_index(solved)
-    result[index] = 0
-
-    while queue:
-        cube: Cube
-        count: int
-        cube, count = queue.popleft()
-
-        for move in G3_MOVES:
-            cube_next = replace(cube)
-            cube_next.turn(move)
-            index = cube_g3_index(cube_next)
-
-            if result[index] == -1:
-                result[index] = count + 1
-                queue.append((cube_next, count + 1))
-
-    return result
+generate_g3_database = partial(
+    generate_database, cube_g3_index, G3_MAX_STATE, G3_MOVES)
 
 
 if __name__ == "__main__":

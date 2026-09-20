@@ -10,12 +10,11 @@ from rubik.cost.thistlethwaite.thistlethwaite0 import (
     generate_g0_database,
     read_database,
     save_database,
+    G0_MAX_STATE,
 )
 import rubik.cost.thistlethwaite.thistlethwaite0 as t0
 from rubik.cube import SOLVED, Cube
 
-
-TOTAL_G0_STATES = 2_048
 
 class TestThistlethwaite0(unittest.TestCase):
     """Unit tests for Phase 0 (G0 -> G1) Thistlethwaite calculations."""
@@ -72,7 +71,7 @@ class TestThistlethwaite0(unittest.TestCase):
             mock_mkdir: MagicMock
         ) -> None:
         """save_database should create directories and pickle data."""
-        dummy_dist = [0] * TOTAL_G0_STATES
+        dummy_dist = [0] * G0_MAX_STATE
         save_database(dummy_dist)
 
         mock_mkdir.assert_called_once_with(parents=True, exist_ok=True)
@@ -105,7 +104,7 @@ class TestThistlethwaite0(unittest.TestCase):
             mock_open_fn: MagicMock
         ) -> None:
         """read_database should generate and save DB if file is missing."""
-        dummy_generated = [-1] * TOTAL_G0_STATES
+        dummy_generated = [-1] * G0_MAX_STATE
         mock_generate.return_value = dummy_generated
 
         read_database()
@@ -114,13 +113,14 @@ class TestThistlethwaite0(unittest.TestCase):
         mock_save.assert_called_once_with(dummy_generated)
         self.assertEqual(t0.G0_DIST, dummy_generated)
 
-    def test_generate_g0_database(self) -> None:
+    @patch("rubik.cost.thistlethwaite.common.print_progress_bar")
+    def test_generate_g0_database(self, mock_progress_bar) -> None:
         """
         Generate_g0_database must produce 2048 reachable states with
         correct distance for solved cube.
         """
         g0_dist = generate_g0_database()
 
-        self.assertEqual(len(g0_dist), TOTAL_G0_STATES)
+        self.assertEqual(len(g0_dist), G0_MAX_STATE)
         self.assertEqual(g0_dist[0], 0)  # Solved state index distance is 0
         self.assertNotIn(-1, g0_dist)    # All 2048 states must be reachable
