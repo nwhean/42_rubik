@@ -1,13 +1,13 @@
 """Calculations related to the Thistlethwaite G2 algorithm."""
 from functools import partial
 import math
-import pickle
 
 from .common import (
     Tile,
     G2_FILE,
     generate_database,
     save_database as _save_database,
+    load_database,
 )
 from ..common import get_colour
 from ...cube import Cube, Colour
@@ -77,24 +77,6 @@ G2_MOVES = [
     'U2', 'D2', 'L2', 'R2', 'F2', 'B2'
     ]
 
-def read_database() -> None:
-    """Read the Thistlethwaite G2 distance database from file."""
-    global G2_DIST
-    try:
-        with open(G2_FILE, "rb") as f:
-            G2_DIST = pickle.load(f)
-
-    except FileNotFoundError:
-        G2_DIST = generate_g2_database()
-        save_database(G2_DIST)
-
-def save_database(g2_dist: list[int]) -> None:
-    """Save the G2 distance database to files."""
-    # Create the directory if it doesn't exist
-    G2_FILE.parent.mkdir(parents=True, exist_ok=True)
-
-    with open(G2_FILE, "wb") as f:
-        pickle.dump(g2_dist, f)
 
 def tetrad_0_indices(cube: Cube) -> list[int]:
     """Return an ordered list containing the indices of tetrad_0 corners."""
@@ -202,6 +184,11 @@ generate_g2_database = partial(
     generate_database, cube_g2_index, G2_MAX_STATE, G2_MOVES)
 
 save_database = partial(_save_database, G2_FILE)
+
+def read_database_2() -> None:
+    """Read the Thistlethwaite G2 distance database from file."""
+    global G2_DIST
+    G2_DIST = load_database(G2_FILE, generate_g2_database)
 
 
 if __name__ == "__main__":

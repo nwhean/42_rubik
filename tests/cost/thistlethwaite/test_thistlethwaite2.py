@@ -6,7 +6,6 @@ from rubik.cost.thistlethwaite.thistlethwaite2 import (
     cube_E_indices,
     cube_g2_index,
     rank_combination,
-    read_database,
     save_database,
     tetrad_0_indices,
     tetrad_parity,

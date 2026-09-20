@@ -7,7 +7,6 @@ from rubik.cost.thistlethwaite.thistlethwaite1 import (
     cube_corner_orientation,
     cube_E_indices,
     cube_g1_index,
-    read_database,
     save_database,
 )
 import rubik.cost.thistlethwaite.thistlethwaite1 as t1

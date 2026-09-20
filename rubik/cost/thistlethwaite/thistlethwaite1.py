@@ -1,7 +1,6 @@
 """Calculations related to the Thistlethwaite G1 algorithm."""
 from functools import partial
 import math
-import pickle
 
 from .common import (
     Tile,
@@ -11,6 +10,7 @@ from .common import (
     CORNERS,
     generate_database,
     save_database as _save_database,
+    load_database,
 )
 from ..common import get_colour
 from ...cube import Cube, Colour, SOLVED
@@ -32,24 +32,6 @@ G1_MOVES = [
     'U2', 'D2', 'L2', 'R2', 'F2', 'B2'
 ]
 
-def read_database() -> None:
-    """Read the Thistlethwaite G1 distance database from file."""
-    global G1_DIST
-    try:
-        with open(G1_FILE, "rb") as f:
-            G1_DIST = pickle.load(f)
-
-    except FileNotFoundError:
-        G1_DIST = generate_g1_database()
-        save_database(G1_DIST)
-
-def save_database(g1_dist: list[int]) -> None:
-    """Save the G1 distance database to files."""
-    # Create the directory if it doesn't exist
-    G1_FILE.parent.mkdir(parents=True, exist_ok=True)
-
-    with open(G1_FILE, "wb") as f:
-        pickle.dump(g1_dist, f)
 
 def corner_orientation(
         cube: Cube,
@@ -96,6 +78,11 @@ generate_g1_database = partial(
     generate_database, cube_g1_index, G1_MAX_STATE, G1_MOVES)
 
 save_database = partial(_save_database, G1_FILE)
+
+def read_database_1() -> None:
+    """Read the Thistlethwaite G1 distance database from file."""
+    global G1_DIST
+    G1_DIST = load_database(G1_FILE, generate_g1_database)
 
 
 if __name__ == "__main__":

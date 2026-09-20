@@ -1,13 +1,13 @@
 """Calculations related to the Thistlethwaite G3 algorithm."""
 from functools import partial
 import math
-import pickle
 
 from .common import (
     Tile,
     G3_FILE,
     generate_database,
     save_database as _save_database,
+    load_database,
 )
 from ..common import get_colour
 from ...cube import Cube, Colour
@@ -105,24 +105,6 @@ CORNER_INDICES: list[dict[frozenset[int], int]] = [
 
 G3_MOVES = ['U2', 'D2', 'L2', 'R2', 'F2', 'B2']
 
-def read_database() -> None:
-    """Read the Thistlethwaite G3 distance database from file."""
-    global G3_DIST
-    try:
-        with open(G3_FILE, "rb") as f:
-            G3_DIST = pickle.load(f)
-
-    except FileNotFoundError:
-        G3_DIST = generate_g3_database()
-        save_database(G3_DIST)
-
-def save_database(g3_dist: list[int]) -> None:
-    """Save the G3 distance database to files."""
-    # Create the directory if it doesn't exist
-    G3_FILE.parent.mkdir(parents=True, exist_ok=True)
-
-    with open(G3_FILE, "wb") as f:
-        pickle.dump(g3_dist, f)
 
 def edge_indices(cube: Cube, group_idx: int) -> list[int]:
     """Return a list containing the indices of S, M or E edges."""
@@ -186,6 +168,11 @@ generate_g3_database = partial(
     generate_database, cube_g3_index, G3_MAX_STATE, G3_MOVES)
 
 save_database = partial(_save_database, G3_FILE)
+
+def read_database_3() -> None:
+    """Read the Thistlethwaite G3 distance database from file."""
+    global G3_DIST
+    G3_DIST = load_database(G3_FILE, generate_g3_database)
 
 
 if __name__ == "__main__":

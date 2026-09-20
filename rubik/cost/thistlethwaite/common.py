@@ -108,3 +108,16 @@ def save_database(filepath: Path, dist: list[int]) -> None:
 
     with open(filepath, "wb") as f:
         pickle.dump(dist, f)
+
+def load_database(
+        filepath: Path,
+        generate_func: Callable[[], list[int]]
+    ) -> list[int]:
+    """Read the Thistlethwaite G0 distance database from file."""
+    try:
+        with open(filepath, "rb") as f:
+            return pickle.load(f)
+    except FileNotFoundError:
+        dist = generate_func()
+        save_database(filepath, dist)
+        return dist

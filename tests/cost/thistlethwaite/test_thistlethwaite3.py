@@ -7,7 +7,6 @@ from rubik.cost.thistlethwaite.thistlethwaite3 import (
     cube_g3_index,
     edge_indices,
     rank_permutation,
-    read_database,
     save_database,
 )
 import rubik.cost.thistlethwaite.thistlethwaite3 as t3

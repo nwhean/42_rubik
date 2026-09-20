@@ -1,6 +1,5 @@
 """Calculations related to the Thistlethwaite G0 algorithm."""
 from functools import partial
-import pickle
 
 from .common import (
     Tile,
@@ -10,6 +9,7 @@ from .common import (
     EDGES,
     generate_database,
     save_database as _save_database,
+    load_database,
 )
 from ..common import get_colour
 from ...cube import Cube, Colour, SOLVED
@@ -28,16 +28,6 @@ G0_MOVES = [
     'U2', 'D2', 'L2', 'R2', 'F2', 'B2'
     ]
 
-def read_database() -> None:
-    """Read the Thistlethwaite G0 distance database from file."""
-    global G0_DIST
-    try:
-        with open(G0_FILE, "rb") as f:
-            G0_DIST = pickle.load(f)
-
-    except FileNotFoundError:
-        G0_DIST = generate_g0_database()
-        save_database(G0_DIST)
 
 def edge_orientation(
         cube: Cube,
@@ -80,6 +70,11 @@ generate_g0_database = partial(
     generate_database,cube_g0_index, G0_MAX_STATE, G0_MOVES)
 
 save_database = partial(_save_database, G0_FILE)
+
+def read_database_0() -> None:
+    """Read the Thistlethwaite G0 distance database from file."""
+    global G0_DIST
+    G0_DIST = load_database(G0_FILE, generate_g0_database)
 
 
 if __name__ == "__main__":

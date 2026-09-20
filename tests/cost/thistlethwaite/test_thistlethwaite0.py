@@ -8,7 +8,7 @@ from rubik.cost.thistlethwaite.thistlethwaite0 import (
     cube_g0_index,
     edge_orientation,
     generate_g0_database,
-    read_database,
+    read_database_0,
     save_database,
     G0_MAX_STATE,
 )
@@ -89,28 +89,28 @@ class TestThistlethwaite0(unittest.TestCase):
         fake_db = [0, 1, 2]
         mock_load.return_value = fake_db
 
-        read_database()
+        read_database_0()
 
         mock_file.assert_called_once_with(t0.G0_FILE, "rb")
         self.assertEqual(t0.G0_DIST, fake_db)
 
     @patch("builtins.open", side_effect=FileNotFoundError)
     @patch("rubik.cost.thistlethwaite.thistlethwaite0.generate_g0_database")
-    @patch("rubik.cost.thistlethwaite.thistlethwaite0.save_database")
+    @patch("rubik.cost.thistlethwaite.common.save_database")
     def test_read_database_file_not_found(
-            self,
-            mock_save: MagicMock,
-            mock_generate: MagicMock,
-            mock_open_fn: MagicMock
-        ) -> None:
+        self,
+        mock_save: MagicMock,
+        mock_generate: MagicMock,
+        mock_open_fn: MagicMock,
+    ) -> None:
         """read_database should generate and save DB if file is missing."""
         dummy_generated = [-1] * G0_MAX_STATE
         mock_generate.return_value = dummy_generated
 
-        read_database()
+        t0.read_database_0()
 
         mock_generate.assert_called_once()
-        mock_save.assert_called_once_with(dummy_generated)
+        mock_save.assert_called_once_with(t0.G0_FILE, dummy_generated)
         self.assertEqual(t0.G0_DIST, dummy_generated)
 
     @patch("rubik.cost.thistlethwaite.common.print_progress_bar")
