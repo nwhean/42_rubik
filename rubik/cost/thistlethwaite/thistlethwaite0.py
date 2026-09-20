@@ -2,13 +2,20 @@
 from functools import partial
 import pickle
 
-from .common import Tile, BASE_DIR, FB_COLOURS, EDGES, generate_database
+from .common import (
+    Tile,
+    BASE_DIR,
+    G0_FILE,
+    FB_COLOURS,
+    EDGES,
+    generate_database,
+    save_database as _save_database,
+)
 from ..common import get_colour
 from ...cube import Cube, Colour, SOLVED
 
 
 G0_MAX_STATE = 2_048
-G0_FILE = BASE_DIR / "G0_distance.pickle"
 G0_DIST: list[int] | None = None
 
 UD_COLOURS = {Colour.W.value, Colour.Y.value}
@@ -31,14 +38,6 @@ def read_database() -> None:
     except FileNotFoundError:
         G0_DIST = generate_g0_database()
         save_database(G0_DIST)
-
-def save_database(g0_dist: list[int]) -> None:
-    """Save the G0 distance database to files."""
-    # Create the directory if it doesn't exist
-    G0_FILE.parent.mkdir(parents=True, exist_ok=True)
-
-    with open(G0_FILE, "wb") as f:
-        pickle.dump(g0_dist, f)
 
 def edge_orientation(
         cube: Cube,
@@ -79,6 +78,8 @@ def cube_g0_index(cube: Cube) -> int:
 
 generate_g0_database = partial(
     generate_database,cube_g0_index, G0_MAX_STATE, G0_MOVES)
+
+save_database = partial(_save_database, G0_FILE)
 
 
 if __name__ == "__main__":

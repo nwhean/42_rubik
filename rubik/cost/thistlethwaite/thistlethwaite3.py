@@ -3,13 +3,17 @@ from functools import partial
 import math
 import pickle
 
-from .common import Tile, BASE_DIR, generate_database
+from .common import (
+    Tile,
+    G3_FILE,
+    generate_database,
+    save_database as _save_database,
+)
 from ..common import get_colour
 from ...cube import Cube, Colour
 
 
 G3_MAX_STATE = 663_552
-G3_FILE = BASE_DIR / "G3_distance.pickle"
 G3_DIST: list[int] | None = None
 
 EDGE_TYPE = tuple[Tile, Tile]
@@ -180,6 +184,8 @@ def cube_g3_index(cube: Cube) -> int:
 
 generate_g3_database = partial(
     generate_database, cube_g3_index, G3_MAX_STATE, G3_MOVES)
+
+save_database = partial(_save_database, G3_FILE)
 
 
 if __name__ == "__main__":

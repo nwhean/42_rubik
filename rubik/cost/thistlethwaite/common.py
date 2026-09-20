@@ -3,6 +3,7 @@ from collections import deque
 from collections.abc import Callable
 from dataclasses import replace
 from pathlib import Path
+import pickle
 import sys
 
 from ...cube import Colour, SOLVED
@@ -11,6 +12,10 @@ from ...cube import Colour, SOLVED
 Tile = tuple[str, int]
 
 BASE_DIR = Path(__file__).parent / "thistlethwaite_database"
+G0_FILE = BASE_DIR / "G0_distance.pickle"
+G1_FILE = BASE_DIR / "G1_distance.pickle"
+G2_FILE = BASE_DIR / "G2_distance.pickle"
+G3_FILE = BASE_DIR / "G3_distance.pickle"
 
 FB_COLOURS = {Colour.R.value, Colour.O.value}
 
@@ -95,3 +100,11 @@ def generate_database(
                 queue.append((cube_next, count + 1))
 
     return result
+
+def save_database(filepath: Path, dist: list[int]) -> None:
+    """Save a distance database list to file."""
+    # Create the directory if it doesn't exist
+    filepath.parent.mkdir(parents=True, exist_ok=True)
+
+    with open(filepath, "wb") as f:
+        pickle.dump(dist, f)

@@ -5,18 +5,18 @@ import pickle
 
 from .common import (
     Tile,
-    BASE_DIR,
+    G1_FILE,
     FB_COLOURS,
     EDGES,
     CORNERS,
     generate_database,
+    save_database as _save_database,
 )
 from ..common import get_colour
 from ...cube import Cube, Colour, SOLVED
 
 
 G1_MAX_STATE = 1_082_565
-G1_FILE = BASE_DIR / "G1_distance.pickle"
 G1_DIST: list[int] | None = None
 
 E_PIECES: set[frozenset[int]] = {
@@ -94,6 +94,8 @@ def cube_g1_index(cube: Cube) -> int:
 
 generate_g1_database = partial(
     generate_database, cube_g1_index, G1_MAX_STATE, G1_MOVES)
+
+save_database = partial(_save_database, G1_FILE)
 
 
 if __name__ == "__main__":
