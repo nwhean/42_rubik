@@ -4,9 +4,11 @@ import math
 
 from .common import (
     Tile,
+    CORNER_TYPE,
     G1_FILE,
     FB_COLOURS,
     EDGES,
+    EDGE_PIECES,
     CORNERS,
     generate_database,
     save_database as _save_database,
@@ -19,12 +21,7 @@ from ...cube import Cube, Colour, SOLVED
 G1_MAX_STATE = 1_082_565
 G1_DIST: list[int] | None = None
 
-E_PIECES: set[frozenset[int]] = {
-    frozenset({Colour.R.value, Colour.G.value}),   # FL
-    frozenset({Colour.G.value, Colour.O.value}),   # BL
-    frozenset({Colour.O.value, Colour.B.value}),   # BR
-    frozenset({Colour.B.value, Colour.R.value}),   # FR
-}
+E_PIECES: set[frozenset[int]] = set(EDGE_PIECES[8:])
 
 G1_MOVES = [
     'L', 'R', 'F', 'B',
@@ -35,7 +32,7 @@ G1_MOVES = [
 
 def corner_orientation(
         cube: Cube,
-        corner: tuple[Tile, Tile, Tile]
+        corner: CORNER_TYPE
         ) -> int:
     """Return the orientation of a corner."""
     colour = [get_colour(cube, *tile) for tile in corner]

@@ -3,6 +3,7 @@ from functools import partial
 
 from .common import (
     Tile,
+    EDGE_TYPE,
     BASE_DIR,
     G0_FILE,
     FB_COLOURS,
@@ -31,7 +32,7 @@ G0_MOVES = [
 
 def edge_orientation(
         cube: Cube,
-        edge: tuple[Tile, Tile]
+        edge: EDGE_TYPE
         ) -> int:
     """Return the orientation of an edge."""
     colour = [get_colour(cube, *tile) for tile in edge]

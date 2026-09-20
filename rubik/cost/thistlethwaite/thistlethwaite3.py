@@ -4,6 +4,12 @@ import math
 
 from .common import (
     Tile,
+    EDGE_TYPE,
+    CORNER_TYPE,
+    EDGES,
+    EDGE_PIECES,
+    CORNERS,
+    CORNER_PIECES,
     G3_FILE,
     generate_database,
     save_database as _save_database,
@@ -16,91 +22,36 @@ from ...cube import Cube, Colour
 G3_MAX_STATE = 663_552
 G3_DIST: list[int] | None = None
 
-EDGE_TYPE = tuple[Tile, Tile]
-CORNER_TYPE = tuple[Tile, Tile, Tile]
 SLICE_TYPE = list[EDGE_TYPE]
 TETRAD_TYPE = list[CORNER_TYPE]
 
-EDGES: list[SLICE_TYPE] = [
-    [
-        (("U", 3), ("R", 7)),   # UR
-        (("D", 5), ("R", 3)),   # DR
-        (("D", 1), ("L", 5)),   # DL
-        (("U", 7), ("L", 1)),   # UL
-    ],
-    [
-        (("F", 1), ("U", 5)),   # FU
-        (("B", 7), ("U", 1)),   # BU
-        (("B", 3), ("D", 7)),   # BD
-        (("F", 5), ("D", 3)),   # FD
-    ],
-    [
-        (("F", 3), ("R", 5)),   # FR
-        (("F", 7), ("L", 3)),   # FL
-        (("B", 1), ("L", 7)),   # BL
-        (("B", 5), ("R", 1)),   # BR
-    ],
+SLICES: list[SLICE_TYPE] = [
+    EDGES[:4],
+    EDGES[4:8],
+    EDGES[8:]
 ]
 
-S_PIECES: list[frozenset[int]] = [
-    frozenset({Colour.W.value, Colour.B.value}),    # UR
-    frozenset({Colour.Y.value, Colour.B.value}),    # DR
-    frozenset({Colour.Y.value, Colour.G.value}),    # DL
-    frozenset({Colour.W.value, Colour.G.value}),    # UL
+S_PIECES: list[frozenset[int]] = EDGE_PIECES[:4]
+M_PIECES: list[frozenset[int]] = EDGE_PIECES[4:8]
+E_PIECES: list[frozenset[int]] = EDGE_PIECES[8:]
+
+EDGE_INDICES: list[dict[frozenset[int], int]] = [
+    {colours: i for i, colours in enumerate(S_PIECES)},
+    {colours: i for i, colours in enumerate(M_PIECES)},
+    {colours: i for i, colours in enumerate(E_PIECES)},
 ]
 
-M_PIECES: list[frozenset[int]] = [
-    frozenset({Colour.R.value, Colour.W.value}),    # FU
-    frozenset({Colour.O.value, Colour.W.value}),    # BU
-    frozenset({Colour.O.value, Colour.Y.value}),    # BD
-    frozenset({Colour.R.value, Colour.Y.value}),    # FD
+TETRADS: list[TETRAD_TYPE] = [
+    CORNERS[:4],
+    CORNERS[4:]
 ]
 
-E_PIECES: list[frozenset[int]] = [
-    frozenset({Colour.R.value, Colour.B.value}),    # FR
-    frozenset({Colour.R.value, Colour.G.value}),    # FL
-    frozenset({Colour.O.value, Colour.G.value}),    # BL
-    frozenset({Colour.O.value, Colour.B.value}),    # BR
-]
-
-EDGE_INDICES = [
-    {frozenset(colours): i for i, colours in enumerate(S_PIECES)},
-    {frozenset(colours): i for i, colours in enumerate(M_PIECES)},
-    {frozenset(colours): i for i, colours in enumerate(E_PIECES)},
-]
-
-CORNERS: list[TETRAD_TYPE] = [
-    [
-        (("F", 4), ("R", 4), ("D", 4)),     # FRD
-        (("F", 0), ("L", 2), ("U", 6)),     # FLU
-        (("B", 2), ("L", 6), ("D", 0)),     # BLD
-        (("B", 6), ("R", 0), ("U", 2)),     # BRU
-    ],
-    [
-        (("F", 2), ("U", 4), ("R", 6)),     # FUR
-        (("F", 6), ("D", 2), ("L", 4)),     # FDL
-        (("B", 0), ("U", 0), ("L", 0)),     # BUL
-        (("B", 4), ("D", 6), ("R", 2)),     # BDR
-    ],
-]
-
-TETRAD_0: list[frozenset[int]] = [
-    frozenset({Colour.R.value, Colour.B.value, Colour.Y.value}),   # FRD
-    frozenset({Colour.R.value, Colour.G.value, Colour.W.value}),   # FLU
-    frozenset({Colour.O.value, Colour.G.value, Colour.Y.value}),   # BLD
-    frozenset({Colour.O.value, Colour.B.value, Colour.W.value}),   # BRU
-]
-
-TETRAD_1: list[frozenset[int]] = [
-    frozenset({Colour.R.value, Colour.B.value, Colour.W.value}),   # FRU
-    frozenset({Colour.R.value, Colour.G.value, Colour.Y.value}),   # FLD
-    frozenset({Colour.O.value, Colour.G.value, Colour.W.value}),   # BLU
-    frozenset({Colour.O.value, Colour.B.value, Colour.Y.value}),   # BRD
-]
+TETRAD_0: list[frozenset[int]] = CORNER_PIECES[:4]
+TETRAD_1: list[frozenset[int]] = CORNER_PIECES[4:]
 
 CORNER_INDICES: list[dict[frozenset[int], int]] = [
-    {frozenset(colours): i for i, colours in enumerate(TETRAD_0)},
-    {frozenset(colours): i for i, colours in enumerate(TETRAD_1)},
+    {colours: i for i, colours in enumerate(TETRAD_0)},
+    {colours: i for i, colours in enumerate(TETRAD_1)},
 ]
 
 G3_MOVES = ['U2', 'D2', 'L2', 'R2', 'F2', 'B2']
@@ -109,7 +60,7 @@ G3_MOVES = ['U2', 'D2', 'L2', 'R2', 'F2', 'B2']
 def edge_indices(cube: Cube, group_idx: int) -> list[int]:
     """Return a list containing the indices of S, M or E edges."""
     result = []
-    for i, edge in enumerate(EDGES[group_idx]):
+    for i, edge in enumerate(SLICES[group_idx]):
         colour = frozenset(get_colour(cube, *tile) for tile in edge)
         result.append(EDGE_INDICES[group_idx][colour])
     return result
@@ -117,7 +68,7 @@ def edge_indices(cube: Cube, group_idx: int) -> list[int]:
 def corner_indices(cube: Cube, group_idx: int) -> list[int]:
     """Return a list containing the indices of tetrad_0 or tetrad_1 corners."""
     result = []
-    for i, corner in enumerate(CORNERS[group_idx]):
+    for i, corner in enumerate(TETRADS[group_idx]):
         colour = frozenset(get_colour(cube, *tile) for tile in corner)
         result.append(CORNER_INDICES[group_idx][colour])
     return result

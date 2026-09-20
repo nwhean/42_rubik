@@ -10,6 +10,8 @@ from ...cube import Colour, SOLVED
 
 
 Tile = tuple[str, int]
+EDGE_TYPE = tuple[Tile, Tile]
+CORNER_TYPE = tuple[Tile, Tile, Tile]
 
 BASE_DIR = Path(__file__).parent / "thistlethwaite_database"
 G0_FILE = BASE_DIR / "G0_distance.pickle"
@@ -22,30 +24,56 @@ FB_COLOURS = {Colour.R.value, Colour.O.value}
 # The pair of colour appear such that they are oriented similarly
 # An edge is oriented correctly if it does not require a U or B turn,
 # or flipped if it requires a U or D turn to be oriented correctly
-EDGES: list[tuple[Tile, Tile]] = [
-    (("U", 3), ("R", 7)),   # UR - 0
-    (("F", 3), ("R", 5)),   # FR - 1
-    (("F", 1), ("U", 5)),   # FU - 2
-    (("U", 7), ("L", 1)),   # UL - 3
-    (("F", 7), ("L", 3)),   # FL - 4
-    (("F", 5), ("D", 3)),   # FD - 5
-    (("D", 1), ("L", 5)),   # DL - 6
-    (("B", 1), ("L", 7)),   # BL - 7
-    (("B", 3), ("D", 7)),   # BD - 8
-    (("D", 5), ("R", 3)),   # DR - 9
-    (("B", 5), ("R", 1)),   # BR - 10
-    (("B", 7), ("U", 1)),   # BU - 11
+EDGES: list[EDGE_TYPE] = [
+    (("U", 3), ("R", 7)),   # UR - S group
+    (("D", 5), ("R", 3)),   # DR - S group
+    (("D", 1), ("L", 5)),   # DL - S group
+    (("U", 7), ("L", 1)),   # UL - S group
+    (("F", 1), ("U", 5)),   # FU - M group
+    (("B", 7), ("U", 1)),   # BU - M group
+    (("B", 3), ("D", 7)),   # BD - M group
+    (("F", 5), ("D", 3)),   # FD - M group
+    (("F", 3), ("R", 5)),   # FR - E group
+    (("F", 7), ("L", 3)),   # FL - E group
+    (("B", 1), ("L", 7)),   # BL - E group
+    (("B", 5), ("R", 1)),   # BR - E group
 ]
 
-CORNERS: list[tuple[Tile, Tile, Tile]] = [
-    (("F", 4), ("R", 4), ("D", 4)),     # FRD
-    (("F", 2), ("U", 4), ("R", 6)),     # FUR
-    (("F", 0), ("L", 2), ("U", 6)),     # FLU
-    (("F", 6), ("D", 2), ("L", 4)),     # FDL
-    (("B", 0), ("U", 0), ("L", 0)),     # BUL
-    (("B", 2), ("L", 6), ("D", 0)),     # BLD
-    (("B", 4), ("D", 6), ("R", 2)),     # BDR
-    (("B", 6), ("R", 0), ("U", 2)),     # BRU
+EDGE_PIECES: list[frozenset[int]] = [
+    frozenset({Colour.W.value, Colour.B.value}),    # UR
+    frozenset({Colour.Y.value, Colour.B.value}),    # DR
+    frozenset({Colour.Y.value, Colour.G.value}),    # DL
+    frozenset({Colour.W.value, Colour.G.value}),    # UL
+    frozenset({Colour.R.value, Colour.W.value}),    # FU
+    frozenset({Colour.O.value, Colour.W.value}),    # BU
+    frozenset({Colour.O.value, Colour.Y.value}),    # BD
+    frozenset({Colour.R.value, Colour.Y.value}),    # FD
+    frozenset({Colour.R.value, Colour.B.value}),    # FR
+    frozenset({Colour.R.value, Colour.G.value}),    # FL
+    frozenset({Colour.O.value, Colour.G.value}),    # BL
+    frozenset({Colour.O.value, Colour.B.value}),    # BR
+]
+
+CORNERS: list[CORNER_TYPE] = [
+    (("F", 4), ("R", 4), ("D", 4)),     # FRD - tetrad 0
+    (("F", 0), ("L", 2), ("U", 6)),     # FLU - tetrad 0
+    (("B", 2), ("L", 6), ("D", 0)),     # BLD - tetrad 0
+    (("B", 6), ("R", 0), ("U", 2)),     # BRU - tetrad 0
+    (("F", 2), ("U", 4), ("R", 6)),     # FUR - tetrad 1
+    (("F", 6), ("D", 2), ("L", 4)),     # FDL - tetrad 1
+    (("B", 0), ("U", 0), ("L", 0)),     # BUL - tetrad 1
+    (("B", 4), ("D", 6), ("R", 2)),     # BDR - tetrad 1
+]
+
+CORNER_PIECES: list[frozenset[int]] = [
+    frozenset({Colour.R.value, Colour.B.value, Colour.Y.value}),   # FRD
+    frozenset({Colour.R.value, Colour.G.value, Colour.W.value}),   # FLU
+    frozenset({Colour.O.value, Colour.G.value, Colour.Y.value}),   # BLD
+    frozenset({Colour.O.value, Colour.B.value, Colour.W.value}),   # BRU
+    frozenset({Colour.R.value, Colour.W.value, Colour.B.value}),   # FUR
+    frozenset({Colour.R.value, Colour.Y.value, Colour.G.value}),   # FDL
+    frozenset({Colour.O.value, Colour.W.value, Colour.G.value}),   # BUL
+    frozenset({Colour.O.value, Colour.Y.value, Colour.B.value}),   # BDR
 ]
 
 def print_progress_bar(iteration, total, bar_length=50):

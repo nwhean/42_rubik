@@ -31,12 +31,12 @@ class TestThistlethwaite1(unittest.TestCase):
         solved_cube = replace(SOLVED)
         e_indices = cube_E_indices(solved_cube)
 
-        self.assertEqual(e_indices, [1, 4, 7, 10])
+        self.assertEqual(e_indices, [8, 9, 10, 11])
 
     def test_solved_cube_index(self) -> None:
-        """The solved cube index should equal 252 (Corner=0 * 495 + E_combo=252)."""
+        """The solved cube index should equal 494."""
         solved_cube = replace(SOLVED)
-        self.assertEqual(cube_g1_index(solved_cube), 252)
+        self.assertEqual(cube_g1_index(solved_cube), 494)
 
     def test_g1_moves_preserve_valid_range(self) -> None:
         """Applying valid G1 moves must produce indices within [0, TOTAL_G1_STATES - 1]."""

@@ -31,7 +31,7 @@ class TestThistlethwaite2(unittest.TestCase):
         solved_cube = replace(SOLVED)
         e_indices = cube_E_indices(solved_cube)
 
-        self.assertEqual(e_indices, [1, 3, 5, 7])
+        self.assertEqual(e_indices, [4, 5, 6, 7])
 
     def test_rank_combination_bounds(self) -> None:
         """Combinadic rank must accurately bound combinations."""

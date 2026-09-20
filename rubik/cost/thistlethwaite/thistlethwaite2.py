@@ -4,6 +4,11 @@ import math
 
 from .common import (
     Tile,
+    EDGE_TYPE,
+    EDGES,
+    EDGE_PIECES,
+    CORNERS,
+    CORNER_PIECES,
     G2_FILE,
     generate_database,
     save_database as _save_database,
@@ -16,60 +21,19 @@ from ...cube import Cube, Colour
 G2_MAX_STATE = 29_400
 G2_DIST: list[int] | None = None
 
-CORNERS = [
-    (("F", 4), ("R", 4), ("D", 4)),     # FRD
-    (("F", 0), ("L", 2), ("U", 6)),     # FLU
-    (("B", 2), ("L", 6), ("D", 0)),     # BLD
-    (("B", 6), ("R", 0), ("U", 2)),     # BRU
-    (("F", 2), ("U", 4), ("R", 6)),     # FUR
-    (("F", 6), ("D", 2), ("L", 4)),     # FDL
-    (("B", 0), ("U", 0), ("L", 0)),     # BUL
-    (("B", 4), ("D", 6), ("R", 2)),     # BDR
-]
-
-CORNER_COLOURS: list[set[int]] = [
-    {Colour.R.value, Colour.B.value, Colour.Y.value},   # FRD
-    {Colour.R.value, Colour.G.value, Colour.W.value},   # FLU
-    {Colour.O.value, Colour.G.value, Colour.Y.value},   # BLD
-    {Colour.O.value, Colour.B.value, Colour.W.value},   # BRU
-    {Colour.R.value, Colour.W.value, Colour.B.value},   # FUR
-    {Colour.R.value, Colour.Y.value, Colour.G.value},   # FDL
-    {Colour.O.value, Colour.W.value, Colour.G.value},   # BUL
-    {Colour.O.value, Colour.Y.value, Colour.B.value},   # BDR
-]
-
 CORNER_INDICES: dict[frozenset[int], int] = {
-    frozenset(colours): i for i, colours in enumerate(CORNER_COLOURS)
+    colours: i for i, colours in enumerate(CORNER_PIECES)
 }
 
 # a tetrad is a set of 4 adjacent corners on the Rubik's Cube
 # these are the set of positions where one cubie can reach using
 # U2, D2, L2, R2, F2, B2 moves only
-TETRAD_0: set[frozenset[int]] = {
-    frozenset({Colour.R.value, Colour.B.value, Colour.Y.value}),   # FRD
-    frozenset({Colour.R.value, Colour.G.value, Colour.W.value}),   # FLU
-    frozenset({Colour.O.value, Colour.G.value, Colour.Y.value}),   # BLD
-    frozenset({Colour.O.value, Colour.B.value, Colour.W.value}),   # BRU
-}
+TETRAD_0: set[frozenset[int]] = set(CORNER_PIECES[:4])
 
-NON_M_EDGES: list[tuple[Tile, Tile]] = [
-    (("U", 3), ("R", 7)),   # UR - 0
-    (("F", 3), ("R", 5)),   # FR - 1
-    (("U", 7), ("L", 1)),   # UL - 2
-    (("F", 7), ("L", 3)),   # FL - 3
-    (("D", 1), ("L", 5)),   # DL - 4
-    (("B", 1), ("L", 7)),   # BL - 5
-    (("D", 5), ("R", 3)),   # DR - 6
-    (("B", 5), ("R", 1)),   # BR - 7
-]
+NON_M_EDGES: list[EDGE_TYPE] = EDGES[0:4] + EDGES[8:]
 
 # We are tracking E_PIECES to isolate them in Phase 2
-E_PIECES: set[frozenset[int]] = {
-    frozenset({Colour.R.value, Colour.B.value}),    # FR
-    frozenset({Colour.R.value, Colour.G.value}),    # FL
-    frozenset({Colour.O.value, Colour.G.value}),    # BL
-    frozenset({Colour.O.value, Colour.B.value}),    # BR
-}
+E_PIECES: set[frozenset[int]] = set(EDGE_PIECES[8:])
 
 G2_MOVES = [
     'L', 'R',
