@@ -1,7 +1,10 @@
 from dataclasses import replace
 from typing import Callable
 
-from rubik.algorithm import ida_star
+from rubik.algorithm import (
+    ida_star,
+    thistlethwaite,
+)
 from rubik.cost import (
     hamming_tile_distance,
     hamming_piece_distance,
@@ -12,6 +15,7 @@ from rubik.cube import Colour, Cube, SOLVED
 
 ALGORITHMS: dict[str, Callable] = {
     "ida": ida_star,
+    "thistlethwaite": thistlethwaite,
 }
 
 COSTS: dict[str, Callable] = {
@@ -50,7 +54,7 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "-a", "--algo", type=str, default="ida",
+        "-a", "--algo", type=str, default="thistlethwaite",
         choices=list(ALGORITHMS.keys()),
         help="search algorithm to be used"
     )
