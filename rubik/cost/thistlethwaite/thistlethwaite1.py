@@ -3,10 +3,8 @@ from functools import partial
 import math
 
 from .common import (
-    Tile,
     CORNER_TYPE,
     G1_FILE,
-    FB_COLOURS,
     EDGES,
     EDGE_PIECES,
     CORNERS,

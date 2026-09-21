@@ -3,7 +3,6 @@ from functools import partial
 import math
 
 from .common import (
-    Tile,
     EDGE_TYPE,
     CORNER_TYPE,
     EDGES,

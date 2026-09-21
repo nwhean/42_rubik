@@ -2,11 +2,9 @@
 from functools import partial
 
 from .common import (
-    Tile,
     EDGE_TYPE,
     BASE_DIR,
     G0_FILE,
-    FB_COLOURS,
     EDGES,
     generate_database,
     save_database as _save_database,
@@ -19,6 +17,7 @@ from ...cube import Cube, Colour, SOLVED
 G0_MAX_STATE = 2_048
 G0_DIST: list[int] | None = None
 
+FB_COLOURS = {Colour.R.value, Colour.O.value}
 UD_COLOURS = {Colour.W.value, Colour.Y.value}
 FB_FACES = {'F', 'B'}
 UD_FACES = {'U', 'D'}

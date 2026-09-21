@@ -6,7 +6,7 @@ from pathlib import Path
 import pickle
 import sys
 
-from ...cube import Colour, SOLVED
+from ...cube import Cube, Colour, SOLVED
 
 
 Tile = tuple[str, int]
@@ -19,11 +19,6 @@ G1_FILE = BASE_DIR / "G1_distance.pickle"
 G2_FILE = BASE_DIR / "G2_distance.pickle"
 G3_FILE = BASE_DIR / "G3_distance.pickle"
 
-FB_COLOURS = {Colour.R.value, Colour.O.value}
-
-# The pair of colour appear such that they are oriented similarly
-# An edge is oriented correctly if it does not require a U or B turn,
-# or flipped if it requires a U or D turn to be oriented correctly
 EDGES: list[EDGE_TYPE] = [
     (("U", 3), ("R", 7)),   # UR - S group
     (("D", 5), ("R", 3)),   # DR - S group
@@ -141,7 +136,7 @@ def load_database(
         filepath: Path,
         generate_func: Callable[[], list[int]]
     ) -> list[int]:
-    """Read the Thistlethwaite G0 distance database from file."""
+    """Read the Thistlethwaite distance database from file."""
     try:
         with open(filepath, "rb") as f:
             return pickle.load(f)
