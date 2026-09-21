@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, mock_open, patch
 from rubik.cost.thistlethwaite.thistlethwaite1 import (
     corner_orientation,
     cube_corner_orientation,
-    cube_E_indices,
+    cube_M_indices,
     cube_g1_index,
     save_database,
 )
@@ -24,19 +24,19 @@ class TestThistlethwaite1(unittest.TestCase):
         orientations = cube_corner_orientation(solved_cube)
 
         self.assertEqual(len(orientations), 8)
-        self.assertEqual(orientations, [0] * 8)
+        self.assertEqual(orientations, [1, 1, 1, 1, 2, 2, 2, 2])
 
     def test_solved_cube_e_slice_indices(self) -> None:
-        """Solved cube E-slice pieces must reside at slots [1, 4, 7, 10]."""
+        """Solved cube E-slice pieces must reside at slots [4, 5, 6, 7]."""
         solved_cube = replace(SOLVED)
-        e_indices = cube_E_indices(solved_cube)
+        m_indices = cube_M_indices(solved_cube)
 
-        self.assertEqual(e_indices, [8, 9, 10, 11])
+        self.assertEqual(m_indices, [4, 5, 6, 7])
 
     def test_solved_cube_index(self) -> None:
-        """The solved cube index should equal 494."""
+        """The solved cube index should equal 1_062_339."""
         solved_cube = replace(SOLVED)
-        self.assertEqual(cube_g1_index(solved_cube), 494)
+        self.assertEqual(cube_g1_index(solved_cube), 1_062_339)
 
     def test_g1_moves_preserve_valid_range(self) -> None:
         """Applying valid G1 moves must produce indices within [0, TOTAL_G1_STATES - 1]."""
