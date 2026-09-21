@@ -62,6 +62,11 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
+        "-p", "--performance", action="store_true",
+        help="Print the solution time and move count"
+    )
+
+    parser.add_argument(
         "-a", "--algo", type=str, default="thistlethwaite",
         choices=list(ALGORITHMS.keys()),
         help="search algorithm to be used"
@@ -123,7 +128,8 @@ if __name__ == "__main__":
     solution_moves = [state._last_move for state in path[1:]]
     move_count = len(solution_moves)
 
-    print(f"Solved in {elapsed:.3f}s ({move_count} moves):")
+    if args.performance:
+        print(f"Solved in {elapsed:.3f}s ({move_count} moves):")
     print(" ".join(solution_moves))
 
     # verify that the generated solution actually solves the cube
