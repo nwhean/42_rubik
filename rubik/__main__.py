@@ -43,6 +43,7 @@ def solve(
 
 if __name__ == "__main__":
     import argparse
+    import random
     import sys
     import time
 
@@ -50,7 +51,14 @@ if __name__ == "__main__":
 
     parser.add_argument(
         "moves",
+        nargs="?",
+        default="",
         help="Space-separated scramble moves (e.g. \"R U R' F2\")"
+    )
+
+    parser.add_argument(
+        "-s", "--scramble", type=int,
+        help="Scramble the cube with a specified number of random moves"
     )
 
     parser.add_argument(
@@ -73,9 +81,28 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    # Determine the moves to apply
+    scramble_moves = []
+    if args.scramble:
+        faces = ["R", "L", "U", "D", "F", "B"]
+        modifiers = ["", "'", "2"]
+        last_face = None
+
+        for _ in range(args.scramble):
+            # prevent turning the same face twice in a row
+            available_faces = [f for f in faces if f != last_face]
+            face = random.choice(available_faces)
+            modifier = random.choice(modifiers)
+            scramble_moves.append(face + modifier)
+            last_face = face
+
+        print(f"Generated Scramble: {' '.join(scramble_moves)}")
+    else:
+        scramble_moves = args.moves.split()
+
     # scramble the cube
     cube = replace(SOLVED)
-    for move in args.moves.split():
+    for move in scramble_moves:
         try:
             cube.turn(move)
         except ValueError as err:
