@@ -98,3 +98,11 @@ if __name__ == "__main__":
 
     print(f"Solved in {elapsed:.3f}s ({move_count} moves):")
     print(" ".join(solution_moves))
+
+    # verify that the generated solution actually solves the cube
+    verification_cube = replace(cube)
+    for move in solution_moves:
+        verification_cube.turn(move)
+
+    if verification_cube != SOLVED:
+        raise RuntimeError("Verification: FAILED (Cube is NOT solved)")
