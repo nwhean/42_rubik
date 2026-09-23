@@ -1,7 +1,5 @@
 import argparse
-import os
 import sys
-import threading
 from dataclasses import replace
 
 import pygame
@@ -414,32 +412,6 @@ def animate_single_step(screen, clock, cube: Cube, move: str):
     cube.turn(move)
 
 
-def cli_input_loop(move_queue: list):
-    """Runs in a background thread to accept CLI input non-blocking."""
-    while True:
-        try:
-            line = input()
-            moves = line.strip().split()
-            valid_moves = []
-
-            for m in moves:
-                if (
-                    len(m) in (1, 2)
-                    and m[0].upper() in "UDLRFB"
-                    and (len(m) == 1 or m[1] in "'2")
-                ):
-                    valid_moves.append(m.upper())
-                else:
-                    print(f"Warning: Ignoring invalid move '{m}'")
-
-            if valid_moves:
-                move_queue.extend(expand_double_turns(valid_moves))
-        except EOFError:
-            break
-        except Exception:
-            pass
-
-
 def run_interactive_cube(
     start_cube: Cube,
     scramble_moves: list[str] = None,
@@ -468,14 +440,6 @@ def run_interactive_cube(
         if move_queue:
             move_queue.append(("WAIT", False))
         move_queue.extend(expand_double_turns(solution_moves))
-
-    # Start the background thread for CLI input
-    cli_thread = threading.Thread(
-        target=cli_input_loop,
-        args=(move_queue,),
-        daemon=True
-    )
-    cli_thread.start()
 
     running = True
     start_time = pygame.time.get_ticks()
@@ -514,7 +478,6 @@ def run_interactive_cube(
             clock.tick(30)
 
     pygame.quit()
-    os._exit(0)
 
 
 if __name__ == "__main__":
