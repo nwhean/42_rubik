@@ -277,61 +277,85 @@ def draw_animation_frame(screen, eased_t: float, stationary: list, moving: list)
     pygame.display.flip()
 
 
+def handle_input_events(move_queue: list[tuple[str, bool]]) -> bool:
+    """Process Pygame events and update the move queue. Returns False to quit."""
+    key_map = {
+        pygame.K_a: 'L',
+        pygame.K_d: 'R',
+        pygame.K_w: 'U',
+        pygame.K_s: 'D',
+        pygame.K_q: 'B',
+        pygame.K_e: 'F'
+    }
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            return False
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                return False
+            elif event.key in key_map:
+                move = key_map[event.key]
+                if pygame.key.get_mods() & pygame.KMOD_SHIFT:
+                    move += "'"
+                move_queue.append((move, False))
+
+    return True
+
+
+def animate_single_step(screen, clock, cube: Cube, move: str):
+    """Calculate trajectories and render the frame-by-frame animation of a move."""
+    stationary_tiles, moving_tiles = calculate_trajectories(cube, move)
+
+    for frame in range(1, ANIM_FRAMES + 1):
+        pygame.event.pump()
+
+        t = frame / ANIM_FRAMES
+        eased_t = t * t * (3 - 2 * t)
+
+        draw_animation_frame(screen, eased_t, stationary_tiles, moving_tiles)
+        clock.tick(ANIM_FPS)
+
+    cube.turn(move)
+
+
 # --- Main Logic ---
 
 
-def animate_moves(start_cube: Cube, moves: list[str]):
-    """Launch the Pygame window and animate a sequence of moves."""
+def run_interactive_cube(start_cube: Cube, initial_moves: list[str] = None):
+    """Launch the Pygame window, animate initial moves, and wait for user input."""
     pygame.init()
 
     width = 11 * TILE_SIZE + 12 * MARGIN
     screen = pygame.display.set_mode((width, width))
-    pygame.display.set_caption("Rubik's Cube Animator")
+    pygame.display.set_caption("Rubik's Cube Interactive Animator")
 
     clock = pygame.time.Clock()
     current_cube = replace(start_cube)
-    animation_steps = expand_double_turns(moves)
+
+    move_queue = expand_double_turns(initial_moves) if initial_moves else []
 
     draw_static_cube(screen, current_cube)
-    pygame.time.wait(1000)
+    if move_queue:
+        pygame.time.wait(1000)
 
-    step_idx = 0
     running = True
-    animating = True
-
     while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
+        # 1. Process OS and Keyboard Events
+        running = handle_input_events(move_queue)
 
-        if animating and step_idx < len(animation_steps):
-            anim_move, pause_after = animation_steps[step_idx]
-            stationary_tiles, moving_tiles = calculate_trajectories(
-                current_cube, anim_move
-            )
+        # 2. Process Animations if the queue has moves
+        if running and move_queue:
+            anim_move, pause_after = move_queue.pop(0)
 
-            for frame in range(1, ANIM_FRAMES + 1):
-                pygame.event.pump()
+            animate_single_step(screen, clock, current_cube, anim_move)
 
-                t = frame / ANIM_FRAMES
-                eased_t = t * t * (3 - 2 * t)
-
-                draw_animation_frame(
-                    screen, eased_t, stationary_tiles, moving_tiles
-                )
-                clock.tick(ANIM_FPS)
-
-            current_cube.turn(anim_move)
-            step_idx += 1
-
-            if pause_after:
+            if pause_after and move_queue:
                 pygame.time.wait(PAUSE_BETWEEN)
 
-        elif animating:
-            animating = False
-            print("Animation complete.")
-
-        clock.tick(15)
+        # 3. Idle State
+        elif running:
+            clock.tick(30)
 
     pygame.quit()
 
@@ -341,4 +365,5 @@ if __name__ == "__main__":
     test_cube = replace(SOLVED)
 
     print(f"Applying test scramble: {' '.join(scramble_moves)}")
-    animate_moves(test_cube, scramble_moves)
+    print("Controls: W=U, S=D, A=L, D=R, Q=B, E=F (Hold Shift for Prime moves)")
+    run_interactive_cube(test_cube, scramble_moves)
