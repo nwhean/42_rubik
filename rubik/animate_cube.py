@@ -1,3 +1,4 @@
+import argparse
 import sys
 import threading
 from dataclasses import replace
@@ -10,7 +11,7 @@ from rubik.cube import SOLVED, Colour, Cube, unpack_8_colours
 # --- Configuration ---
 TILE_SIZE = 35
 MARGIN = 5
-# Frames per quarter-turn (divisible by 3 for perfectly smooth outer rings)
+# Frames per quarter-turn (divisible by 3 for smooth outer rings)
 ANIM_FRAMES = 21
 ANIM_FPS = 60           # Framerate of the animation
 PAUSE_BETWEEN = 150     # Milliseconds to pause between distinct moves
@@ -88,7 +89,9 @@ VISUAL_RINGS = [
     ['F6', 'F5', 'F4', 'R4', 'R3', 'R2', 'B4', 'B3', 'B2', 'L6', 'L5', 'L4']
 ]
 
+
 # --- Logic Helpers ---
+
 
 def get_move_mapping(move: str) -> dict:
     """Returns a dict mapping 'StartPos' -> 'EndPos' for a given move."""
@@ -115,6 +118,7 @@ def get_move_mapping(move: str) -> dict:
 
     return mapping
 
+
 def get_path(start_pos, end_pos):
     """Extract step-by-step intermediate path array from the visual rings."""
     for ring in VISUAL_RINGS:
@@ -132,20 +136,28 @@ def get_path(start_pos, end_pos):
 
     return [start_pos, end_pos]
 
+
 # --- UI and Drawing Helpers ---
+
 
 def init_fonts():
     """Initialize fonts for the sidebar UI."""
     global UI_FONT_TITLE, UI_FONT_BODY, UI_FONT_MONO
     pygame.font.init()
     try:
-        UI_FONT_TITLE = pygame.font.SysFont("segoeui,helvetica,arial", 30, bold=True)
+        UI_FONT_TITLE = pygame.font.SysFont(
+            "segoeui,helvetica,arial", 30, bold=True
+        )
         UI_FONT_BODY = pygame.font.SysFont("segoeui,helvetica,arial", 18)
-        UI_FONT_MONO = pygame.font.SysFont("consolas,courier,monospace", 18, bold=True)
+        UI_FONT_MONO = pygame.font.SysFont(
+            "consolas,courier,monospace", 18, bold=True
+        )
     except Exception:
+        # Fallbacks if system fonts fail to load
         UI_FONT_TITLE = pygame.font.SysFont(None, 30, bold=True)
         UI_FONT_BODY = pygame.font.SysFont(None, 20)
         UI_FONT_MONO = pygame.font.SysFont(None, 20, bold=True)
+
 
 def draw_sidebar(surface, start_x):
     """Draw the instructions sidebar to the right of the cube."""
@@ -153,60 +165,66 @@ def draw_sidebar(surface, start_x):
         init_fonts()
 
     text_color = (220, 220, 220)
-    highlight_color = (255, 213, 0) # Yellow accent for keys
+    highlight_color = (255, 213, 0)  # Yellow accent for keys
     y_offset = 30
 
-    # Title
     title_surface = UI_FONT_TITLE.render("Controls", True, text_color)
     surface.blit(title_surface, (start_x + 20, y_offset))
     y_offset += 40
 
-    pygame.draw.line(surface, (80, 80, 80), (start_x + 20, y_offset), (start_x + SIDEBAR_WIDTH - 20, y_offset), 2)
+    pygame.draw.line(
+        surface,
+        (80, 80, 80),
+        (start_x + 20, y_offset),
+        (start_x + SIDEBAR_WIDTH - 20, y_offset),
+        2
+    )
     y_offset += 20
 
-    # Explicit instruction mapping
+    # Explicit instruction mapping with proper PEP 8 string wrapping
     instructions = [
-        ("A", "turn LEFT face clockwise (L)"),
-        ("D", "turn RIGHT face clockwise (R)"),
         ("W", "turn UP face clockwise (U)"),
         ("S", "turn DOWN face clockwise (D)"),
+        ("A", "turn LEFT face clockwise (L)"),
+        ("D", "turn RIGHT face clockwise (R)"),
         ("Q", "turn BACK face clockwise (B)"),
         ("E", "turn FRONT face clockwise (F)"),
         ("", ""),
-        ("Shift + A", "turn LEFT face anti-clockwise (L')"),
-        ("Shift + D", "turn RIGHT face anti-clockwise (R')"),
-        ("Shift + W", "turn UP face anti-clockwise (U')"),
-        ("Shift + S", "turn DOWN face anti-clockwise (D')"),
-        ("Shift + Q", "turn BACK face anti-clockwise (B')"),
-        ("Shift + E", "turn FRONT face anti-clockwise (F')"),
+        ("Shift + Key", "turn face anti-clockwise (e.g., U')"),
         ("", ""),
         ("Esc", "Quit application")
     ]
 
     for key_text, desc_text in instructions:
         if not key_text:
-            y_offset += 15 # Spacer
+            y_offset += 15  # Spacer
             continue
 
         key_surface = UI_FONT_MONO.render(key_text, True, highlight_color)
         desc_surface = UI_FONT_BODY.render(desc_text, True, text_color)
 
         surface.blit(key_surface, (start_x + 20, y_offset))
-        # Shifted the description text further right to prevent overlap
-        surface.blit(desc_surface, (start_x + 135, y_offset))
+        # Spaced out to 150 to ensure 'Shift + Key' doesn't overlap description
+        surface.blit(desc_surface, (start_x + 150, y_offset))
 
-        y_offset += 22 # Tighter vertical spacing
+        y_offset += 25
+
 
 def draw_static_centers(surface):
     """Draw the background, sidebar, and static center circles."""
     surface.fill(BG_COLOUR)
 
-    # Draw the sidebar on the right
     cube_area_width = 11 * TILE_SIZE + 12 * MARGIN
     draw_sidebar(surface, cube_area_width)
 
-    # Draw a vertical separator line
-    pygame.draw.line(surface, (60, 60, 60), (cube_area_width, 0), (cube_area_width, surface.get_height()), 2)
+    # Vertical separator line
+    pygame.draw.line(
+        surface,
+        (60, 60, 60),
+        (cube_area_width, 0),
+        (cube_area_width, surface.get_height()),
+        2
+    )
 
     for grid_x, grid_y, char in CENTERS:
         draw_tile(surface, grid_x, grid_y, char, is_center=True)
@@ -264,6 +282,7 @@ def draw_tile(
             surface, BG_COLOUR, (center_x, center_y), hole_radius
         )
 
+
 def draw_static_cube(surface, cube: Cube):
     """Draw the cube instantly without animation."""
     draw_static_centers(surface)
@@ -278,6 +297,7 @@ def draw_static_cube(surface, cube: Cube):
 
 
 # --- Animation Helpers ---
+
 
 def expand_double_turns(moves: list[str]) -> list[tuple[str, bool]]:
     """Convert half turns into two continuous quarter turns."""
@@ -314,7 +334,10 @@ def calculate_trajectories(cube: Cube, move: str) -> tuple[list, list]:
 
     return stationary, moving
 
-def draw_animation_frame(screen, eased_t: float, stationary: list, moving: list):
+
+def draw_animation_frame(
+    screen, eased_t: float, stationary: list, moving: list
+):
     """Render a single interpolated frame of the cube's transition."""
     draw_static_centers(screen)
     draw_all_orbits(screen)
@@ -349,7 +372,7 @@ def draw_animation_frame(screen, eased_t: float, stationary: list, moving: list)
 
 
 def handle_input_events(move_queue: list[tuple[str, bool]]) -> bool:
-    """Process Pygame events and update the move queue. Returns False to quit."""
+    """Process Pygame events and update the move queue."""
     key_map = {
         pygame.K_a: 'L',
         pygame.K_d: 'R',
@@ -373,6 +396,7 @@ def handle_input_events(move_queue: list[tuple[str, bool]]) -> bool:
 
     return True
 
+
 def animate_single_step(screen, clock, cube: Cube, move: str):
     """Calculate trajectories and render the animation of a single move."""
     stationary_tiles, moving_tiles = calculate_trajectories(cube, move)
@@ -390,7 +414,7 @@ def animate_single_step(screen, clock, cube: Cube, move: str):
 
 
 def cli_input_loop(move_queue: list):
-    """Runs in a background thread to accept CLI input without blocking Pygame."""
+    """Runs in a background thread to accept CLI input non-blocking."""
     while True:
         try:
             line = input()
@@ -398,9 +422,11 @@ def cli_input_loop(move_queue: list):
             valid_moves = []
 
             for m in moves:
-                # Basic validation: Must be 1 or 2 chars, start with a valid face,
-                # and end with a valid modifier to prevent the animator from crashing.
-                if len(m) in (1, 2) and m[0].upper() in "UDLRFB" and (len(m) == 1 or m[1] in "'2"):
+                if (
+                    len(m) in (1, 2)
+                    and m[0].upper() in "UDLRFB"
+                    and (len(m) == 1 or m[1] in "'2")
+                ):
                     valid_moves.append(m.upper())
                 else:
                     print(f"Warning: Ignoring invalid move '{m}'")
@@ -420,7 +446,6 @@ def run_interactive_cube(start_cube: Cube, initial_moves: list[str] = None):
 
     cube_area_width = 11 * TILE_SIZE + 12 * MARGIN
     width = cube_area_width + SIDEBAR_WIDTH
-    # Use cube_area_width as the height to keep the rendering area square
     height = cube_area_width
 
     screen = pygame.display.set_mode((width, height))
@@ -439,17 +464,25 @@ def run_interactive_cube(start_cube: Cube, initial_moves: list[str] = None):
     )
     cli_thread.start()
 
-    draw_static_cube(screen, current_cube)
-    if move_queue:
-        pygame.time.wait(1000)
-
     running = True
+    start_time = pygame.time.get_ticks()
+
+    # 1000ms delay to let the OS map the window before animating.
+    # By checking this in the loop, we avoid blocking the event queue.
+    startup_delay = 1000 if move_queue else 0
+
     while running:
         # 1. Process OS and Keyboard Events
         running = handle_input_events(move_queue)
 
-        # 2. Process Animations if the queue has moves
-        if running and move_queue:
+        current_time = pygame.time.get_ticks()
+
+        # 2. Process Animations (wait until startup delay finishes)
+        if (
+            running
+            and move_queue
+            and (current_time - start_time > startup_delay)
+        ):
             anim_move, pause_after = move_queue.pop(0)
 
             animate_single_step(screen, clock, current_cube, anim_move)
@@ -457,16 +490,44 @@ def run_interactive_cube(start_cube: Cube, initial_moves: list[str] = None):
             if pause_after and move_queue:
                 pygame.time.wait(PAUSE_BETWEEN)
 
-        # 3. Idle State
+        # 3. Idle State (Continuously redraw so the window initializes)
         elif running:
+            draw_static_cube(screen, current_cube)
             clock.tick(30)
 
     pygame.quit()
 
 
 if __name__ == "__main__":
-    scramble_moves = "L R U D F B L2 R2 U2 D2 F2 B2 L' R' U' D' F' B'".split()
+    parser = argparse.ArgumentParser(
+        description="Rubik's Cube Interactive Animator"
+    )
+    parser.add_argument(
+        "moves",
+        nargs="*",
+        help="Optional list of moves (e.g., L R2 U' F)"
+    )
+    args = parser.parse_args()
+
+    # Parse moves, splitting strings to handle quoted inputs like "L R2 U"
+    raw_moves = []
+    for arg in args.moves:
+        raw_moves.extend(arg.strip().split())
+
+    scramble_moves = []
+    for m in raw_moves:
+        if (
+            len(m) in (1, 2)
+            and m[0].upper() in "UDLRFB"
+            and (len(m) == 1 or m[1] in "'2")
+        ):
+            scramble_moves.append(m.upper())
+        else:
+            print(f"Warning: Ignoring invalid initial move '{m}'")
+
     test_cube = replace(SOLVED)
 
-    print(f"Applying test scramble: {' '.join(scramble_moves)}")
+    if scramble_moves:
+        print(f"Applying initial scramble: {' '.join(scramble_moves)}")
+
     run_interactive_cube(test_cube, scramble_moves)
