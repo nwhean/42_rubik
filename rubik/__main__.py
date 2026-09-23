@@ -10,8 +10,8 @@ from rubik.algorithm import (
     thistlethwaite,
 )
 from rubik.cost import (
-    hamming_tile_distance,
     hamming_piece_distance,
+    hamming_tile_distance,
     manhattan_distance,
 )
 from rubik.cube import SOLVED, Cube
@@ -29,11 +29,11 @@ COSTS: dict[str, Callable] = {
 
 
 def solve(
-        node: Cube,
-        algo: str,
-        cost: str,
-        weight: float,
-    ) -> tuple[list[Cube], int]:
+    node: Cube,
+    algo: str,
+    cost: str,
+    weight: float,
+) -> tuple[list[Cube], int]:
     """Solve a Rubik's Cube state and return the path and final cost bound."""
     if algo not in ALGORITHMS:
         raise ValueError(f"Unknown algorithm: {algo}")
@@ -47,14 +47,16 @@ def solve(
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Rubik's Cube Solver")
 
-    parser.add_argument(
+    scramble_group = parser.add_mutually_exclusive_group()
+
+    scramble_group.add_argument(
         "moves",
         nargs="?",
         default="",
         help='Space-separated scramble moves (e.g. "R U R\' F2")',
     )
 
-    parser.add_argument(
+    scramble_group.add_argument(
         "-s",
         "--scramble",
         type=int,
@@ -83,8 +85,10 @@ if __name__ == "__main__":
         type=str,
         default="manhattan",
         choices=list(COSTS.keys()),
-        help="Heuristic cost function to be used by solver. "
-        "Default = 'manhattan'",
+        help=(
+            "Heuristic cost function to be used by solver. "
+            "Default = 'manhattan'"
+        ),
     )
 
     parser.add_argument(
@@ -104,7 +108,6 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    # Determine the moves to apply
     scramble_moves = []
     if args.scramble:
         faces = ["R", "L", "U", "D", "F", "B"]
@@ -112,7 +115,7 @@ if __name__ == "__main__":
         last_face = None
 
         for _ in range(args.scramble):
-            # prevent turning the same face twice in a row
+            # Prevent turning the same face twice in a row
             available_faces = [f for f in faces if f != last_face]
             face = random.choice(available_faces)
             modifier = random.choice(modifiers)
@@ -123,7 +126,6 @@ if __name__ == "__main__":
     else:
         scramble_moves = args.moves.split()
 
-    # scramble the cube
     cube = replace(SOLVED)
     for move in scramble_moves:
         try:
@@ -132,7 +134,7 @@ if __name__ == "__main__":
             print(f"Invalid scramble move '{move}'", file=sys.stderr)
             sys.exit(1)
 
-    # reset last move so transition table isn't constrained by scramble
+    # Reset last move so transition table isn't constrained by scramble
     cube._last_move = None
 
     start_time = time.perf_counter()
@@ -150,7 +152,6 @@ if __name__ == "__main__":
         print(f"Solved in {elapsed:.3f}s ({move_count} moves):")
     print(" ".join(solution_moves))
 
-    # verify that the generated solution actually solves the cube
     verification_cube = replace(cube)
     for move in solution_moves:
         verification_cube.turn(move)
@@ -158,10 +159,10 @@ if __name__ == "__main__":
     if verification_cube != SOLVED:
         raise RuntimeError("Verification: FAILED (Cube is NOT solved)")
 
-    # Launch Pygame visualization if the flag is provided
     if args.graphics:
         try:
             from rubik.animate_cube import run_interactive_cube
+
             print("Launching visualization...")
             run_interactive_cube(SOLVED, scramble_moves, solution_moves)
         except ImportError as e:
