@@ -4,7 +4,7 @@ from dataclasses import replace
 import pygame
 
 # Import from your existing cube module
-from rubik.cube import SOLVED, Colour, Cube, pack_8_colours, unpack_8_colours
+from rubik.cube import SOLVED, Colour, Cube, unpack_8_colours
 
 # --- Configuration ---
 TILE_SIZE = 35
@@ -14,6 +14,10 @@ ANIM_FRAMES = 21
 ANIM_FPS = 60           # Framerate of the animation
 PAUSE_BETWEEN = 150     # Milliseconds to pause between distinct moves
 BG_COLOUR = (30, 30, 30)
+SIDEBAR_WIDTH = 460     # Width of the instructions sidebar
+UI_FONT_TITLE = None
+UI_FONT_BODY = None
+UI_FONT_MONO = None
 
 # RGB mapping for your Colour enum
 COLOURS = {
@@ -64,7 +68,6 @@ CENTERS = [
 
 # Define the exact clockwise perimeter paths for the 2D layout.
 VISUAL_RINGS = [
-
     ['U0', 'U1', 'U2', 'U3', 'U4', 'U5', 'U6', 'U7'],
     ['B0', 'B7', 'B6', 'R0', 'R7', 'R6', 'F2', 'F1', 'F0', 'L2', 'L1', 'L0'],
 
@@ -84,12 +87,14 @@ VISUAL_RINGS = [
     ['F6', 'F5', 'F4', 'R4', 'R3', 'R2', 'B4', 'B3', 'B2', 'L6', 'L5', 'L4']
 ]
 
+# --- Logic Helpers ---
 
 def get_move_mapping(move: str) -> dict:
     """Returns a dict mapping 'StartPos' -> 'EndPos' for a given move."""
     face_names = ["R", "L", "U", "D", "F", "B"]
     c_args = []
 
+    # Pack unique integers (0 to 47) directly into the 64-bit blocks
     for i in range(6):
         packed = 0
         for j in range(8):
@@ -127,16 +132,79 @@ def get_path(start_pos, end_pos):
 
     return [start_pos, end_pos]
 
+# --- UI and Drawing Helpers ---
 
-# --- Drawing Helpers ---
+def init_fonts():
+    """Initialize fonts for the sidebar UI."""
+    global UI_FONT_TITLE, UI_FONT_BODY, UI_FONT_MONO
+    pygame.font.init()
+    # Using system fonts. Fallbacks provided.
+    try:
+        UI_FONT_TITLE = pygame.font.SysFont("segoeui,helvetica,arial", 32, bold=True)
+        UI_FONT_BODY = pygame.font.SysFont("segoeui,helvetica,arial", 20)
+        UI_FONT_MONO = pygame.font.SysFont("consolas,courier,monospace", 20, bold=True)
+    except:
+        UI_FONT_TITLE = pygame.font.SysFont(None, 36, bold=True)
+        UI_FONT_BODY = pygame.font.SysFont(None, 24)
+        UI_FONT_MONO = pygame.font.SysFont(None, 24, bold=True)
+
+def draw_sidebar(surface, start_x):
+    """Draw the instructions sidebar to the right of the cube."""
+    if UI_FONT_TITLE is None:
+        init_fonts()
+
+    text_color = (220, 220, 220)
+    highlight_color = (255, 213, 0) # Yellow accent for keys
+    y_offset = 30
+
+    # Title
+    title_surface = UI_FONT_TITLE.render("Controls", True, text_color)
+    surface.blit(title_surface, (start_x + 20, y_offset))
+    y_offset += 40
+
+    pygame.draw.line(surface, (80, 80, 80), (start_x + 20, y_offset), (start_x + SIDEBAR_WIDTH - 20, y_offset), 2)
+    y_offset += 20
+
+    # Instruction mapping
+    instructions = [
+        ("W", "turn UP face clockwise (U)"),
+        ("S", "turn DOWN face clockwise (D)"),
+        ("A", "turn LEFT face clockwise (L)"),
+        ("D", "turn RIGHT face clockwise (R)"),
+        ("Q", "turn BACK face clockwise (B)"),
+        ("E", "turn FRONT face clockwise (F)"),
+        ("", ""),
+        ("Shift + Key", "turn face anti-clockwise instead"),
+        ("", ""),
+        ("Esc", "Quit application")
+    ]
+
+    for key_text, desc_text in instructions:
+        if not key_text:
+            y_offset += 15 # Spacer
+            continue
+
+        key_surface = UI_FONT_MONO.render(f"{key_text:11}", True, highlight_color)
+        desc_surface = UI_FONT_BODY.render(desc_text, True, text_color)
+
+        surface.blit(key_surface, (start_x + 20, y_offset))
+        surface.blit(desc_surface, (start_x + 160, y_offset))
+        y_offset += 30
 
 
 def draw_static_centers(surface):
-    """Draw the background and the non-moving center circles."""
+    """Draw the background, sidebar, and static center circles."""
     surface.fill(BG_COLOUR)
+
+    # Draw the sidebar on the right
+    cube_area_width = 11 * TILE_SIZE + 12 * MARGIN
+    draw_sidebar(surface, cube_area_width)
+
+    # Draw a vertical separator line
+    pygame.draw.line(surface, (60, 60, 60), (cube_area_width, 0), (cube_area_width, surface.get_height()), 2)
+
     for grid_x, grid_y, char in CENTERS:
         draw_tile(surface, grid_x, grid_y, char, is_center=True)
-
 
 def draw_dotted_line(
     surface, p1, p2, color=(100, 100, 100), radius=2, spacing=10
@@ -190,7 +258,6 @@ def draw_tile(
             surface, BG_COLOUR, (center_x, center_y), hole_radius
         )
 
-
 def draw_static_cube(surface, cube: Cube):
     """Draw the cube instantly without animation."""
     draw_static_centers(surface)
@@ -241,7 +308,6 @@ def calculate_trajectories(cube: Cube, move: str) -> tuple[list, list]:
             })
 
     return stationary, moving
-
 
 def draw_animation_frame(screen, eased_t: float, stationary: list, moving: list):
     """Render a single interpolated frame of the cube's transition."""
@@ -302,9 +368,8 @@ def handle_input_events(move_queue: list[tuple[str, bool]]) -> bool:
 
     return True
 
-
 def animate_single_step(screen, clock, cube: Cube, move: str):
-    """Calculate trajectories and render the frame-by-frame animation of a move."""
+    """Calculate trajectories and render the animation of a single move."""
     stationary_tiles, moving_tiles = calculate_trajectories(cube, move)
 
     for frame in range(1, ANIM_FRAMES + 1):
@@ -319,15 +384,17 @@ def animate_single_step(screen, clock, cube: Cube, move: str):
     cube.turn(move)
 
 
-# --- Main Logic ---
-
-
 def run_interactive_cube(start_cube: Cube, initial_moves: list[str] = None):
-    """Launch the Pygame window, animate initial moves, and wait for user input."""
+    """Launch Pygame window, animate initial moves, wait for user input."""
     pygame.init()
+    init_fonts()
 
-    width = 11 * TILE_SIZE + 12 * MARGIN
-    screen = pygame.display.set_mode((width, width))
+    cube_area_width = 11 * TILE_SIZE + 12 * MARGIN
+    width = cube_area_width + SIDEBAR_WIDTH
+    # Use cube_area_width as the height to keep the rendering area square
+    height = cube_area_width
+
+    screen = pygame.display.set_mode((width, height))
     pygame.display.set_caption("Rubik's Cube Interactive Animator")
 
     clock = pygame.time.Clock()
@@ -365,5 +432,4 @@ if __name__ == "__main__":
     test_cube = replace(SOLVED)
 
     print(f"Applying test scramble: {' '.join(scramble_moves)}")
-    print("Controls: W=U, S=D, A=L, D=R, Q=B, E=F (Hold Shift for Prime moves)")
     run_interactive_cube(test_cube, scramble_moves)
