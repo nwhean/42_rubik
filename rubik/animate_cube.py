@@ -440,7 +440,11 @@ def cli_input_loop(move_queue: list):
             pass
 
 
-def run_interactive_cube(start_cube: Cube, initial_moves: list[str] = None):
+def run_interactive_cube(
+    start_cube: Cube,
+    scramble_moves: list[str] = None,
+    solution_moves: list[str] = None
+):
     """Launch Pygame window, animate initial moves, wait for user input."""
     pygame.init()
     init_fonts()
@@ -455,7 +459,15 @@ def run_interactive_cube(start_cube: Cube, initial_moves: list[str] = None):
     clock = pygame.time.Clock()
     current_cube = replace(start_cube)
 
-    move_queue = expand_double_turns(initial_moves) if initial_moves else []
+    # Combine scramble moves and solution moves into the initial queue
+    move_queue = []
+    if scramble_moves:
+        move_queue.extend(expand_double_turns(scramble_moves))
+    if solution_moves:
+        # If there are scramble moves, inject a 1-second pause before solving
+        if move_queue:
+            move_queue.append(("WAIT", False))
+        move_queue.extend(expand_double_turns(solution_moves))
 
     # Start the background thread for CLI input
     cli_thread = threading.Thread(
@@ -485,6 +497,11 @@ def run_interactive_cube(start_cube: Cube, initial_moves: list[str] = None):
             and (current_time - start_time > startup_delay)
         ):
             anim_move, pause_after = move_queue.pop(0)
+
+            # Handle our injected 1-second pause sequence marker
+            if anim_move == "WAIT":
+                pygame.time.wait(1000)
+                continue
 
             animate_single_step(screen, clock, current_cube, anim_move)
 
@@ -516,20 +533,20 @@ if __name__ == "__main__":
     for arg in args.moves:
         raw_moves.extend(arg.strip().split())
 
-    scramble_moves = []
+    initial_scramble = []
     for m in raw_moves:
         if (
             len(m) in (1, 2)
             and m[0].upper() in "UDLRFB"
             and (len(m) == 1 or m[1] in "'2")
         ):
-            scramble_moves.append(m.upper())
+            initial_scramble.append(m.upper())
         else:
             print(f"Warning: Ignoring invalid initial move '{m}'")
 
     test_cube = replace(SOLVED)
 
-    if scramble_moves:
-        print(f"Applying initial scramble: {' '.join(scramble_moves)}")
+    if initial_scramble:
+        print(f"Applying initial scramble: {' '.join(initial_scramble)}")
 
-    run_interactive_cube(test_cube, scramble_moves)
+    run_interactive_cube(test_cube, scramble_moves=initial_scramble)

@@ -1,3 +1,7 @@
+import argparse
+import random
+import sys
+import time
 from dataclasses import replace
 from typing import Callable
 
@@ -10,8 +14,7 @@ from rubik.cost import (
     hamming_piece_distance,
     manhattan_distance,
 )
-from rubik.cube import Colour, Cube, SOLVED
-
+from rubik.cube import SOLVED, Cube
 
 ALGORITHMS: dict[str, Callable] = {
     "ida": ida_star,
@@ -42,46 +45,61 @@ def solve(
 
 
 if __name__ == "__main__":
-    import argparse
-    import random
-    import sys
-    import time
-
     parser = argparse.ArgumentParser(description="Rubik's Cube Solver")
 
     parser.add_argument(
         "moves",
         nargs="?",
         default="",
-        help="Space-separated scramble moves (e.g. \"R U R' F2\")"
+        help='Space-separated scramble moves (e.g. "R U R\' F2")',
     )
 
     parser.add_argument(
-        "-s", "--scramble", type=int,
-        help="Scramble the cube with a specified number of random moves"
+        "-s",
+        "--scramble",
+        type=int,
+        help="Scramble the cube with a specified number of random moves",
     )
 
     parser.add_argument(
-        "-p", "--performance", action="store_true",
-        help="Print the solution time and move count"
+        "-p",
+        "--performance",
+        action="store_true",
+        help="Print the solution time and move count",
     )
 
     parser.add_argument(
-        "-a", "--algo", type=str, default="thistlethwaite",
+        "-a",
+        "--algo",
+        type=str,
+        default="thistlethwaite",
         choices=list(ALGORITHMS.keys()),
-        help="search algorithm to be used"
+        help="Search algorithm to be used",
     )
 
     parser.add_argument(
-        "-c", "--cost", type=str, default="manhattan",
+        "-c",
+        "--cost",
+        type=str,
+        default="manhattan",
         choices=list(COSTS.keys()),
-        help="heuristic cost function to be used by solver. "\
-            "Default = 'manhattan'"
+        help="Heuristic cost function to be used by solver. "
+        "Default = 'manhattan'",
     )
 
     parser.add_argument(
-        "-w", "--weight", type=float, default=2.5,
-        help="weight factor to multiply heuristic cost value. Default = 2.5"
+        "-w",
+        "--weight",
+        type=float,
+        default=2.5,
+        help="Weight factor to multiply heuristic cost value. Default = 2.5",
+    )
+
+    parser.add_argument(
+        "-g",
+        "--graphics",
+        action="store_true",
+        help="Visualize the scramble and solution using Pygame",
     )
 
     args = parser.parse_args()
@@ -110,7 +128,7 @@ if __name__ == "__main__":
     for move in scramble_moves:
         try:
             cube.turn(move)
-        except ValueError as err:
+        except ValueError:
             print(f"Invalid scramble move '{move}'", file=sys.stderr)
             sys.exit(1)
 
@@ -139,3 +157,12 @@ if __name__ == "__main__":
 
     if verification_cube != SOLVED:
         raise RuntimeError("Verification: FAILED (Cube is NOT solved)")
+
+    # Launch Pygame visualization if the flag is provided
+    if args.graphics:
+        try:
+            from rubik.animate_cube import run_interactive_cube
+            print("Launching visualization...")
+            run_interactive_cube(SOLVED, scramble_moves, solution_moves)
+        except ImportError as e:
+            print(f"Could not load graphics module: {e}", file=sys.stderr)
