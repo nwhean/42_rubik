@@ -1,4 +1,5 @@
 import argparse
+import os
 import sys
 import threading
 from dataclasses import replace
@@ -496,6 +497,7 @@ def run_interactive_cube(start_cube: Cube, initial_moves: list[str] = None):
             clock.tick(30)
 
     pygame.quit()
+    os._exit(0)
 
 
 if __name__ == "__main__":
