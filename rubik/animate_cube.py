@@ -1,4 +1,5 @@
 import sys
+import threading
 from dataclasses import replace
 
 import pygame
@@ -114,7 +115,6 @@ def get_move_mapping(move: str) -> dict:
 
     return mapping
 
-
 def get_path(start_pos, end_pos):
     """Extract step-by-step intermediate path array from the visual rings."""
     for ring in VISUAL_RINGS:
@@ -138,15 +138,14 @@ def init_fonts():
     """Initialize fonts for the sidebar UI."""
     global UI_FONT_TITLE, UI_FONT_BODY, UI_FONT_MONO
     pygame.font.init()
-    # Using system fonts. Fallbacks provided.
     try:
-        UI_FONT_TITLE = pygame.font.SysFont("segoeui,helvetica,arial", 32, bold=True)
-        UI_FONT_BODY = pygame.font.SysFont("segoeui,helvetica,arial", 20)
-        UI_FONT_MONO = pygame.font.SysFont("consolas,courier,monospace", 20, bold=True)
-    except:
-        UI_FONT_TITLE = pygame.font.SysFont(None, 36, bold=True)
-        UI_FONT_BODY = pygame.font.SysFont(None, 24)
-        UI_FONT_MONO = pygame.font.SysFont(None, 24, bold=True)
+        UI_FONT_TITLE = pygame.font.SysFont("segoeui,helvetica,arial", 30, bold=True)
+        UI_FONT_BODY = pygame.font.SysFont("segoeui,helvetica,arial", 18)
+        UI_FONT_MONO = pygame.font.SysFont("consolas,courier,monospace", 18, bold=True)
+    except Exception:
+        UI_FONT_TITLE = pygame.font.SysFont(None, 30, bold=True)
+        UI_FONT_BODY = pygame.font.SysFont(None, 20)
+        UI_FONT_MONO = pygame.font.SysFont(None, 20, bold=True)
 
 def draw_sidebar(surface, start_x):
     """Draw the instructions sidebar to the right of the cube."""
@@ -165,16 +164,21 @@ def draw_sidebar(surface, start_x):
     pygame.draw.line(surface, (80, 80, 80), (start_x + 20, y_offset), (start_x + SIDEBAR_WIDTH - 20, y_offset), 2)
     y_offset += 20
 
-    # Instruction mapping
+    # Explicit instruction mapping
     instructions = [
-        ("W", "turn UP face clockwise (U)"),
-        ("S", "turn DOWN face clockwise (D)"),
         ("A", "turn LEFT face clockwise (L)"),
         ("D", "turn RIGHT face clockwise (R)"),
+        ("W", "turn UP face clockwise (U)"),
+        ("S", "turn DOWN face clockwise (D)"),
         ("Q", "turn BACK face clockwise (B)"),
         ("E", "turn FRONT face clockwise (F)"),
         ("", ""),
-        ("Shift + Key", "turn face anti-clockwise instead"),
+        ("Shift + A", "turn LEFT face anti-clockwise (L')"),
+        ("Shift + D", "turn RIGHT face anti-clockwise (R')"),
+        ("Shift + W", "turn UP face anti-clockwise (U')"),
+        ("Shift + S", "turn DOWN face anti-clockwise (D')"),
+        ("Shift + Q", "turn BACK face anti-clockwise (B')"),
+        ("Shift + E", "turn FRONT face anti-clockwise (F')"),
         ("", ""),
         ("Esc", "Quit application")
     ]
@@ -184,13 +188,14 @@ def draw_sidebar(surface, start_x):
             y_offset += 15 # Spacer
             continue
 
-        key_surface = UI_FONT_MONO.render(f"{key_text:11}", True, highlight_color)
+        key_surface = UI_FONT_MONO.render(key_text, True, highlight_color)
         desc_surface = UI_FONT_BODY.render(desc_text, True, text_color)
 
         surface.blit(key_surface, (start_x + 20, y_offset))
-        surface.blit(desc_surface, (start_x + 160, y_offset))
-        y_offset += 30
+        # Shifted the description text further right to prevent overlap
+        surface.blit(desc_surface, (start_x + 135, y_offset))
 
+        y_offset += 22 # Tighter vertical spacing
 
 def draw_static_centers(surface):
     """Draw the background, sidebar, and static center circles."""
@@ -205,6 +210,7 @@ def draw_static_centers(surface):
 
     for grid_x, grid_y, char in CENTERS:
         draw_tile(surface, grid_x, grid_y, char, is_center=True)
+
 
 def draw_dotted_line(
     surface, p1, p2, color=(100, 100, 100), radius=2, spacing=10
@@ -272,7 +278,6 @@ def draw_static_cube(surface, cube: Cube):
 
 
 # --- Animation Helpers ---
-
 
 def expand_double_turns(moves: list[str]) -> list[tuple[str, bool]]:
     """Convert half turns into two continuous quarter turns."""
@@ -384,6 +389,30 @@ def animate_single_step(screen, clock, cube: Cube, move: str):
     cube.turn(move)
 
 
+def cli_input_loop(move_queue: list):
+    """Runs in a background thread to accept CLI input without blocking Pygame."""
+    while True:
+        try:
+            line = input()
+            moves = line.strip().split()
+            valid_moves = []
+
+            for m in moves:
+                # Basic validation: Must be 1 or 2 chars, start with a valid face,
+                # and end with a valid modifier to prevent the animator from crashing.
+                if len(m) in (1, 2) and m[0].upper() in "UDLRFB" and (len(m) == 1 or m[1] in "'2"):
+                    valid_moves.append(m.upper())
+                else:
+                    print(f"Warning: Ignoring invalid move '{m}'")
+
+            if valid_moves:
+                move_queue.extend(expand_double_turns(valid_moves))
+        except EOFError:
+            break
+        except Exception:
+            pass
+
+
 def run_interactive_cube(start_cube: Cube, initial_moves: list[str] = None):
     """Launch Pygame window, animate initial moves, wait for user input."""
     pygame.init()
@@ -401,6 +430,14 @@ def run_interactive_cube(start_cube: Cube, initial_moves: list[str] = None):
     current_cube = replace(start_cube)
 
     move_queue = expand_double_turns(initial_moves) if initial_moves else []
+
+    # Start the background thread for CLI input
+    cli_thread = threading.Thread(
+        target=cli_input_loop,
+        args=(move_queue,),
+        daemon=True
+    )
+    cli_thread.start()
 
     draw_static_cube(screen, current_cube)
     if move_queue:
