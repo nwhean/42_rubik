@@ -76,7 +76,7 @@ if __name__ == "__main__":
         type=str,
         default="thistlethwaite",
         choices=list(ALGORITHMS.keys()),
-        help="Search algorithm to be used",
+        help="Search algorithm to be used. Default = 'thistlethwaite'",
     )
 
     parser.add_argument(
