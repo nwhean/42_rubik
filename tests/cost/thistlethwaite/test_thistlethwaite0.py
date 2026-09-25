@@ -4,13 +4,13 @@ from unittest.mock import MagicMock, mock_open, patch
 
 from rubik.cost.thistlethwaite.common import EDGES
 from rubik.cost.thistlethwaite.thistlethwaite0 import (
+    G0_MAX_STATE,
     cube_edge_orientation,
     cube_g0_index,
     edge_orientation,
     generate_g0_database,
     read_database_0,
     save_database,
-    G0_MAX_STATE,
 )
 import rubik.cost.thistlethwaite.thistlethwaite0 as t0
 from rubik.cube import SOLVED
