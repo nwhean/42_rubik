@@ -3,7 +3,7 @@ from functools import partial
 import math
 
 from .common import (
-    EDGE_TYPE,
+    EdgeType,
     EDGES,
     EDGE_PIECES,
     CORNERS,
@@ -14,7 +14,7 @@ from .common import (
     load_database,
 )
 from ..common import get_colour
-from ...cube import Cube, Colour
+from ...cube import Cube
 
 
 G2_MAX_STATE = 29_400
@@ -29,7 +29,7 @@ CORNER_INDICES: dict[frozenset[int], int] = {
 # U2, D2, L2, R2, F2, B2 moves only
 TETRAD_0: set[frozenset[int]] = set(CORNER_PIECES[:4])
 
-NON_M_EDGES: list[EDGE_TYPE] = EDGES[0:4] + EDGES[8:]
+NON_M_EDGES: list[EdgeType] = EDGES[0:4] + EDGES[8:]
 
 # We are tracking E_PIECES to isolate them in Phase 2
 E_PIECES: set[frozenset[int]] = set(EDGE_PIECES[8:])
@@ -92,7 +92,7 @@ def tetrad_parity(cube: Cube) -> int:
 
     return result
 
-def cube_E_indices(cube: Cube) -> list[int]:
+def cube_e_indices(cube: Cube) -> list[int]:
     """Return the sorted indices of the E slice pieces."""
     result: list[int] = []
     for i, edge in enumerate(NON_M_EDGES):
@@ -104,7 +104,7 @@ def cube_E_indices(cube: Cube) -> list[int]:
 def corner_indices(cube: Cube) -> list[int]:
     """Return a list containing the indices of the corners."""
     result: list[int] = []
-    for i, corner in enumerate(CORNERS):
+    for corner in CORNERS:
         colours = frozenset(get_colour(cube, *tile) for tile in corner)
         result.append(CORNER_INDICES[colours])
     return result
@@ -134,7 +134,7 @@ def cube_g2_index(cube: Cube) -> int:
     for a total of 70 x 70 x 2 x 3 = 29,400 states.
     """
     t_indices = tetrad_0_indices(cube)
-    e_indices = cube_E_indices(cube)
+    e_indices = cube_e_indices(cube)
     tetrad_coord = tetrad_parity(cube)
 
     return (

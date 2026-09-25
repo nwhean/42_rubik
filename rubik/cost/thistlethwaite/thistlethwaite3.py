@@ -3,8 +3,8 @@ from functools import partial
 import math
 
 from .common import (
-    EDGE_TYPE,
-    CORNER_TYPE,
+    EdgeType,
+    CornerType,
     EDGES,
     EDGE_PIECES,
     CORNERS,
@@ -15,16 +15,16 @@ from .common import (
     load_database,
 )
 from ..common import get_colour
-from ...cube import Cube, Colour
+from ...cube import Cube
 
 
 G3_MAX_STATE = 663_552
 G3_DIST: list[int] | None = None
 
-SLICE_TYPE = list[EDGE_TYPE]
-TETRAD_TYPE = list[CORNER_TYPE]
+SliceType = list[EdgeType]
+TetradType = list[CornerType]
 
-SLICES: list[SLICE_TYPE] = [
+SLICES: list[SliceType] = [
     EDGES[:4],
     EDGES[4:8],
     EDGES[8:]
@@ -40,7 +40,7 @@ EDGE_INDICES: list[dict[frozenset[int], int]] = [
     {colours: i for i, colours in enumerate(E_PIECES)},
 ]
 
-TETRADS: list[TETRAD_TYPE] = [
+TETRADS: list[TetradType] = [
     CORNERS[:4],
     CORNERS[4:]
 ]
@@ -59,7 +59,7 @@ G3_MOVES = ['U2', 'D2', 'L2', 'R2', 'F2', 'B2']
 def edge_indices(cube: Cube, group_idx: int) -> list[int]:
     """Return a list containing the indices of S, M or E edges."""
     result = []
-    for i, edge in enumerate(SLICES[group_idx]):
+    for edge in SLICES[group_idx]:
         colour = frozenset(get_colour(cube, *tile) for tile in edge)
         result.append(EDGE_INDICES[group_idx][colour])
     return result
@@ -67,7 +67,7 @@ def edge_indices(cube: Cube, group_idx: int) -> list[int]:
 def corner_indices(cube: Cube, group_idx: int) -> list[int]:
     """Return a list containing the indices of tetrad_0 or tetrad_1 corners."""
     result = []
-    for i, corner in enumerate(TETRADS[group_idx]):
+    for corner in TETRADS[group_idx]:
         colour = frozenset(get_colour(cube, *tile) for tile in corner)
         result.append(CORNER_INDICES[group_idx][colour])
     return result

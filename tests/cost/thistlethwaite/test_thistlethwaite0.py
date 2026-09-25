@@ -13,7 +13,7 @@ from rubik.cost.thistlethwaite.thistlethwaite0 import (
     G0_MAX_STATE,
 )
 import rubik.cost.thistlethwaite.thistlethwaite0 as t0
-from rubik.cube import SOLVED, Cube
+from rubik.cube import SOLVED
 
 
 class TestThistlethwaite0(unittest.TestCase):
@@ -58,7 +58,7 @@ class TestThistlethwaite0(unittest.TestCase):
         moves = ['U', 'D']
         for move in moves:
             for _ in range(2):
-                cube.turn("U")
+                cube.turn(move)
         self.assertEqual(cube_g0_index(cube), 0)
 
     @patch("pathlib.Path.mkdir")

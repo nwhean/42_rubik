@@ -2,8 +2,7 @@
 from functools import partial
 
 from .common import (
-    EDGE_TYPE,
-    BASE_DIR,
+    EdgeType,
     G0_FILE,
     EDGES,
     generate_database,
@@ -11,7 +10,7 @@ from .common import (
     load_database,
 )
 from ..common import get_colour
-from ...cube import Cube, Colour, SOLVED
+from ...cube import Cube, Colour
 
 
 G0_MAX_STATE = 2_048
@@ -31,7 +30,7 @@ G0_MOVES = [
 
 def edge_orientation(
         cube: Cube,
-        edge: EDGE_TYPE
+        edge: EdgeType
         ) -> int:
     """Return the orientation of an edge."""
     colour = [get_colour(cube, *tile) for tile in edge]

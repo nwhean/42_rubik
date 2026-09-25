@@ -26,14 +26,14 @@ def hamming_piece_distance(start: Cube, goal: Cube) -> float:
     bad_corners: int = 0
     for corner in CORNERS:
         for tile in corner:
-            if (get_colour(start, *tile) != get_colour(goal, *tile)):
+            if get_colour(start, *tile) != get_colour(goal, *tile):
                 bad_corners += 1
                 break
 
     bad_edges: int = 0
     for edge in EDGES:
         for tile in edge:
-            if (get_colour(start, *tile) != get_colour(goal, *tile)):
+            if get_colour(start, *tile) != get_colour(goal, *tile):
                 bad_edges += 1
                 break
 

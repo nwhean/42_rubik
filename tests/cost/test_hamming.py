@@ -7,7 +7,6 @@ from rubik.cost.hamming import (
     hamming_tile_distance,
     hamming_piece_distance,
 )
-from rubik.cost.common import get_colour
 from rubik.cube import SOLVED
 
 

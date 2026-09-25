@@ -3,15 +3,14 @@ import unittest
 from unittest.mock import MagicMock, mock_open, patch
 
 from rubik.cost.thistlethwaite.thistlethwaite2 import (
-    cube_E_indices,
+    cube_e_indices,
     cube_g2_index,
     rank_combination,
     save_database,
     tetrad_0_indices,
-    tetrad_parity,
 )
 import rubik.cost.thistlethwaite.thistlethwaite2 as t2
-from rubik.cube import SOLVED, Cube
+from rubik.cube import SOLVED
 
 
 TOTAL_G2_STATES = 29_400
@@ -29,7 +28,7 @@ class TestThistlethwaite2(unittest.TestCase):
     def test_solved_cube_e_slice_indices(self) -> None:
         """Solved cube E-slice pieces must reside at non-M slots [1, 3, 5, 7]."""
         solved_cube = replace(SOLVED)
-        e_indices = cube_E_indices(solved_cube)
+        e_indices = cube_e_indices(solved_cube)
 
         self.assertEqual(e_indices, [4, 5, 6, 7])
 
@@ -56,7 +55,12 @@ class TestThistlethwaite2(unittest.TestCase):
     @patch("pathlib.Path.mkdir")
     @patch("builtins.open", new_callable=mock_open)
     @patch("pickle.dump")
-    def test_save_database(self, mock_dump: MagicMock, mock_file: MagicMock, mock_mkdir: MagicMock) -> None:
+    def test_save_database(
+            self,
+            mock_dump: MagicMock,
+            mock_file: MagicMock,
+            mock_mkdir: MagicMock
+        ) -> None:
         """save_database should ensure directory exists and pickle dataset."""
         dummy_dist = [0] * TOTAL_G2_STATES
         save_database(dummy_dist)

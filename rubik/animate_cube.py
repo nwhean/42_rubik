@@ -1,6 +1,8 @@
+"""Handles graphics for the Rubik's Cube."""
+
 import argparse
-import sys
 from dataclasses import replace
+from itertools import pairwise
 
 import pygame
 
@@ -95,11 +97,11 @@ VISUAL_RINGS = [
 def get_move_mapping(move: str) -> dict:
     """Returns a dict mapping 'StartPos' -> 'EndPos' for a given move."""
     face_names = ["R", "L", "U", "D", "F", "B"]
-    c_args = []
+    c_args: list[int] = []
 
     # Pack unique integers (0 to 47) directly into the 64-bit blocks
     for i in range(6):
-        packed = 0
+        packed: int = 0
         for j in range(8):
             packed |= ((i * 8 + j) & 0xFF) << (j * 8)
         c_args.append(packed)
@@ -130,7 +132,7 @@ def get_path(start_pos, end_pos):
             if diff in [2, 3]:
                 return [ring[(si + i) % length] for i in range(diff + 1)]
             elif diff in [length - 2, length - 3]:
-                diff_back = (length - diff)
+                diff_back = length - diff
                 return [ring[(si - i) % length] for i in range(diff_back + 1)]
 
     return [start_pos, end_pos]
@@ -252,9 +254,10 @@ def draw_dotted_line(
 def draw_all_orbits(surface):
     """Draw all the dotted line orbits for every visual ring on the cube."""
     for ring in VISUAL_RINGS:
-        for i in range(len(ring)):
-            p1_pos = POS_MAP[ring[i]]
-            p2_pos = POS_MAP[ring[(i + 1) % len(ring)]]
+        pair = pairwise(ring + [ring[0]])
+        for loc_a, loc_b in pair:
+            p1_pos = POS_MAP[loc_a]
+            p2_pos = POS_MAP[loc_b]
 
             x1 = MARGIN + p1_pos[0] * (TILE_SIZE + MARGIN) + TILE_SIZE / 2
             y1 = MARGIN + p1_pos[1] * (TILE_SIZE + MARGIN) + TILE_SIZE / 2

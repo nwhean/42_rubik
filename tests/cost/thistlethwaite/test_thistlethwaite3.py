@@ -16,7 +16,7 @@ from rubik.cube import SOLVED
 TOTAL_G3_STATES = 663_552
 
 class TestThistlethwaite3(unittest.TestCase):
-    """Unit tests for Phase 2 (G3 -> G4) Thistlethwaite calculations."""
+    """Unit tests for Phase 3 (G3 -> G4) Thistlethwaite calculations."""
 
     def test_solved_cube_corner_indices(self) -> None:
         """A solved cube must have corner indices equal to [0, 1, 2, 3] for both tetrads."""
@@ -56,7 +56,12 @@ class TestThistlethwaite3(unittest.TestCase):
     @patch("pathlib.Path.mkdir")
     @patch("builtins.open", new_callable=mock_open)
     @patch("pickle.dump")
-    def test_save_database(self, mock_dump: MagicMock, mock_file: MagicMock, mock_mkdir: MagicMock) -> None:
+    def test_save_database(
+            self,
+            mock_dump: MagicMock,
+            mock_file: MagicMock,
+            mock_mkdir: MagicMock
+        ) -> None:
         """save_database should ensure directory exists and pickle dataset."""
         dummy_dist = [0] * TOTAL_G3_STATES
         save_database(dummy_dist)

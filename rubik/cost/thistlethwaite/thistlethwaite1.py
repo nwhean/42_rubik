@@ -3,7 +3,7 @@ from functools import partial
 import math
 
 from .common import (
-    CORNER_TYPE,
+    CornerType,
     G1_FILE,
     EDGES,
     EDGE_PIECES,
@@ -13,7 +13,7 @@ from .common import (
     load_database,
 )
 from ..common import get_colour
-from ...cube import Cube, Colour, SOLVED
+from ...cube import Cube, Colour
 
 
 G1_MAX_STATE = 1_082_565
@@ -31,7 +31,7 @@ G1_MOVES = [
 
 def corner_orientation(
         cube: Cube,
-        corner: CORNER_TYPE
+        corner: CornerType
         ) -> int:
     """Return the orientation of a corner."""
     colour = [get_colour(cube, *tile) for tile in corner]
@@ -39,14 +39,13 @@ def corner_orientation(
     for (i, col) in enumerate(colour):
         if col in LR_COLOURS:
             return i
-    else:
-        raise ValueError("Corner piece is missing L or R colour tile.")
+    raise ValueError("Corner piece is missing L or R colour tile.")
 
 def cube_corner_orientation(cube: Cube) -> list[int]:
     """Return a list containing the orientation of each corner."""
     return [corner_orientation(cube, corner) for corner in CORNERS]
 
-def cube_M_indices(cube: Cube) -> list[int]:
+def cube_m_indices(cube: Cube) -> list[int]:
     """Return the sorted indices of the M slice pieces."""
     result = []
     for i, edge in enumerate(EDGES):
@@ -61,12 +60,12 @@ def cube_g1_index(cube: Cube) -> int:
     Combine corner orientations (0-2186) and E-slice combinations (0-494).
     """
     index_corner = cube_corner_orientation(cube)
-    index_M = cube_M_indices(cube)
+    index_m = cube_m_indices(cube)
     result = 0
     for i, val in enumerate(index_corner[:-1]):
         result += val * 3**i
     combo = 0
-    for i, val in enumerate(index_M, start=1):
+    for i, val in enumerate(index_m, start=1):
         combo += math.comb(val, i)
     return result * 495 + combo
 

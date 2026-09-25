@@ -10,8 +10,8 @@ from ...cube import Cube, Colour, SOLVED
 
 
 Tile = tuple[str, int]
-EDGE_TYPE = tuple[Tile, Tile]
-CORNER_TYPE = tuple[Tile, Tile, Tile]
+EdgeType = tuple[Tile, Tile]
+CornerType = tuple[Tile, Tile, Tile]
 
 BASE_DIR = Path(__file__).parent / "thistlethwaite_database"
 G0_FILE = BASE_DIR / "G0_distance.pickle"
@@ -19,7 +19,7 @@ G1_FILE = BASE_DIR / "G1_distance.pickle"
 G2_FILE = BASE_DIR / "G2_distance.pickle"
 G3_FILE = BASE_DIR / "G3_distance.pickle"
 
-EDGES: list[EDGE_TYPE] = [
+EDGES: list[EdgeType] = [
     (("U", 3), ("R", 7)),   # UR - S group
     (("D", 5), ("R", 3)),   # DR - S group
     (("D", 1), ("L", 5)),   # DL - S group
@@ -49,7 +49,7 @@ EDGE_PIECES: list[frozenset[int]] = [
     frozenset({Colour.O.value, Colour.B.value}),    # BR
 ]
 
-CORNERS: list[CORNER_TYPE] = [
+CORNERS: list[CornerType] = [
     (("F", 4), ("R", 4), ("D", 4)),     # FRD - tetrad 0
     (("F", 0), ("L", 2), ("U", 6)),     # FLU - tetrad 0
     (("B", 2), ("L", 6), ("D", 0)),     # BLD - tetrad 0
@@ -84,10 +84,10 @@ def print_progress_bar(iteration, total, bar_length=50):
     print_progress_bar.last_percent = percent
 
     filled_length = int(bar_length * iteration // total)
-    bar = '█' * filled_length + '-' * (bar_length - filled_length)
+    prog_bar = '█' * filled_length + '-' * (bar_length - filled_length)
 
     # \r moves the cursor back to the start of the line
-    sys.stdout.write(f'\rProgress: |{bar}| {percent}% Complete')
+    sys.stdout.write(f'\rProgress: |{prog_bar}| {percent}% Complete')
     sys.stdout.flush()
 
     if iteration == total:
